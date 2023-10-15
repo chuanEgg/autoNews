@@ -1,5 +1,6 @@
 # ytp-project
-## General outline & project objective
+## Plan A
+### General outline & project objective
 - grab the trending news online (mainly for PTT) and collect relating data from mainstream media
 - summarize and rewrite them using LLM
 - generate a video with the given information
@@ -7,16 +8,26 @@
 	- voice using TTS
 	- pictures and video from collected data or online APIs
 
-## Related works
+### Related works
 - Taiwan-LLaMa
 
-## Tools & method
+### Tools & method
 - Language: Python
-### packages
+#### packages
 - HuggingFace transformer
 - moviepy
 - gTTS
 - beautiful Soup
-### APIs
+#### APIs
 - GIPHY
 
+## Plan B
+### General outline
+- Get what the users are reading through chrome extension
+- Grab the keywords from the article and find the relevent information on the Internet
+- Summarize these articles through LLM and demonstrate in the chrome extension GUI
+
+### Tools what we need
+- ChatGPT
+- Taiwan LLM
+- GNews (Python model)
