@@ -21,12 +21,11 @@
 #### APIs
 - GIPHY
 
-
 ## Plan B
 ### General outline
-- Get what the users are reading through chrome extension
-- Grab the keywords from the article and find the relevent information on the Internet
-- Summarize these articles through LLM and demonstrate in the chrome extension GUI
+- Get what the users are reading through chrome extension.
+- Grab the keywords from the article and find the relevent information on the Internet.
+- Summarize these articles through LLM and demonstrate in the chrome extension GUI.
 
 ### Tools what we need
 - ChatGPT
