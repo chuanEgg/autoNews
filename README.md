@@ -21,6 +21,7 @@
 #### APIs
 - GIPHY
 
+
 ## Plan B
 ### General outline
 - Get what the users are reading through chrome extension
