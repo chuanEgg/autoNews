@@ -11,8 +11,10 @@ for i in range(len(keyword)):
     for j in range(1, len(keyword[i])):
         while True:
             try:
-                downloader.download(keyword[i][j], limit = 1, output_dir = "image", force_replace = True, filter = "photo")
-                image.append(Image.open(os.path.join("image", keyword[i][j], os.listdir(os.path.join("image", keyword[i][j]))[0])))
+                downloader.download(keyword[i][j], \
+                limit = 1, output_dir = "image", force_replace = True, filter = "photo")
+                image.append(Image.open(os.path.join("image", \
+                keyword[i][j], os.listdir(os.path.join("image", keyword[i][j]))[0])))
                 break
             except: pass
     final_image = Image.new("RGB", (1920, 1080))
