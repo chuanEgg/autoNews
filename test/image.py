@@ -11,7 +11,7 @@ for i in range(len(keyword)):
     for j in range(1, len(keyword[i])):
         while True:
             try:
-                downloader.download(str(keyword[i][j]+" meme"), limit = 1, output_dir = "image", force_replace = True, filter = "photo")
+                downloader.download(keyword[i][j], limit = 1, output_dir = "image", force_replace = True, filter = "photo")
                 image.append(Image.open(os.path.join("image", keyword[i][j], os.listdir(os.path.join("image", keyword[i][j]))[0])))
                 break
             except: pass
