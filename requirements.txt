@@ -2,3 +2,7 @@ openai==0.28.1
 tiktoken
 transformers
 torch
+pyttsx3
+moviepy
+PIL
+bing_image_downloader
