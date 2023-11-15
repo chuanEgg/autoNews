@@ -2,4 +2,8 @@ langchain==0.0.316
 openai==0.28.1
 tiktoken
 chromadb==0.4.15
+pyttsx3
+moviepy
+PIL
+bing_image_downloader
 
