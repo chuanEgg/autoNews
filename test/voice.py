@@ -3,7 +3,7 @@ from json import dump, load
 import os
 
 engine = pyttsx3.init()
-engine.setProperty("rate", 200)
+engine.setProperty("rate", 220)
 engine.setProperty("voice", "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\MSTTS_V110_zhTW_YatingM")
 
 with open("cut.json", "r", encoding = "utf-8") as f:
