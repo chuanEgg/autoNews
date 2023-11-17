@@ -1,14 +1,13 @@
-import spacy
+from transformers import AutoTokenizer, AutoModelForTokenClassification, TokenClassificationPipeline
 
-nlp = spacy.load("zh_core_web_md")
-text = """總統大選藍白合不合引發關注。前總統馬英九先生今天透過馬辦呼籲，採用全民調決定「侯柯配」或「柯侯配」，新竹縣長楊文科、新竹市長高虹安以及苗栗縣長鍾東錦，今天晚上發出聯合聲明指出，「十分贊同」前總統馬英九的看法，也呼籲國民黨可以採納這個建議。
+model_name = "QCRI/bert-base-multilingual-cased-pos-english"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForTokenClassification.from_pretrained(model_name)
 
-無黨籍苗栗縣長鍾東錦指出，面對即將到來的總統大選只剩下2個多月，藍白到底有沒有辦法整合出一組人馬，讓許多地方鄉親都感到十分焦慮，因此今天看到前總統馬英九提出，以「侯柯配」或「柯侯配」，跟民進黨的「賴蕭配」作對比民調，採全民調方式，誰能勝出就支持誰，大家都感到十分贊同。
-
-鍾東錦也認為已經沒有時間繼續拖下去，唯有採全民調的方式，才能讓「贏的人師出有名、輸的人也能夠服氣」，進而同心協力，一起打贏總統選戰。
-
-國民黨籍新竹縣長楊文科與民眾黨籍新竹市長高虹安，今晚也表示非常認同鍾東錦縣長的想法，因此，3人晚間決定，共同發出聯合聲明，支持前總統馬英九所提出的「全民調」方式，作為決定藍白合總統與副總統人選的依據。"""
-
-document = nlp(text)
-for named_entity in document.ents:
-    print(named_entity, named_entity.label_)
+text = """拜登和習近平將在舊金山會面，討論如何避免核戰爭、人工智慧殺人機器和台灣問題。這是一場歷史性的峰會，因為這是兩位領導人第一次面對面交流，而不是通過翻譯或Zoom。拜登希望能夠說服習近平，中國不應該干涉美國的內政，比如支持俄羅斯、哈馬斯和菲律賓。習近平則希望能夠說服拜登，美國不應該干涉中國的內政，比如支持台灣、維吾爾和香港。兩位領導人都有自己的底線，但也有共同的利益，比如維持貿易、防止疫情和打擊芬太尼。這次會談的成果將取決於兩國是否能夠重啟軍事交流，讓兩軍能夠直接溝通，而不是用飛機艦艇互相威脅。這是一個艱難的任務，但也是一個必要的步驟，因為如果不這樣做，世界可能會變成一個更危險的地方。當然，這也可能是一個無聊的會談，因為兩國在很多問題上都沒有太多妥協空間，而且會談後也不會發布聯合公報。所以，我們只能祈禱，這次會談不會變成一場空洞的禮節性活動，而是一場真正的對話，能夠為中美關係帶來一些改善。不過，我們也不要抱太大的期望，因為這是拜登和習近平，而不是奧巴馬和達賴喇嘛。"""
+pipeline = TokenClassificationPipeline(model=model, tokenizer=tokenizer)
+outputs = pipeline(text)
+print(outputs)
+# document = nlp(text)
+# for named_entity in document.ents:
+#     print(named_entity, named_entity.label_)
