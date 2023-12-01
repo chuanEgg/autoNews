@@ -4,3 +4,4 @@ test/constants.py
 test/__pycache__
 test/image
 test/voice
+test/tenor/video
