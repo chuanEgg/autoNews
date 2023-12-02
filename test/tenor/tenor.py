@@ -3,7 +3,7 @@ import json
 import os
 # set the apikey and limit
 apikey = "AIzaSyCmeWu09YmT9sRwyfqnZBoGROEBhsHVsF0"  # click to set to your apikey
-lmt = 2
+lmt = 3
 ckey = "my_test_app"  # set the client_key for the integration and use the same value for all API calls
 
 # our test search
@@ -15,12 +15,12 @@ r = requests.get(
 
 if r.status_code == 200:
     # load the video of GIFS
-    top_8gifs = json.loads(r.content)
-    print(top_8gifs["results"][0]["media_formats"]["mp4"])
-    vidoe_url = top_8gifs["results"][0]["media_formats"]["mp4"]["url"]
+    top_gifs = json.loads(r.content)
+    print(top_gifs["results"][0]["media_formats"]["mp4"])
+    vidoe_url = top_gifs["results"][0]["media_formats"]["mp4"]["url"]
     # download video
     r = requests.get(vidoe_url, stream=True)
     with open(os.path.join("video", f"{search_term}.mp4"), "wb") as f:
         f.write(r.content)
 else:
-    top_8gifs = None
+    top_gifs = None

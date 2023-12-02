@@ -2,6 +2,6 @@ offload/*
 Gossiping-QA-Dataset-2_0.csv
 test/constants.py
 test/__pycache__
-test/image
-test/voice
+video_v1/image
+video_v1/voice
 test/tenor/video
