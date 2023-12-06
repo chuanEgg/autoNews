@@ -6,3 +6,4 @@ pyttsx3
 moviepy
 PIL
 bing_image_downloader
+ckiptagger
