@@ -6,4 +6,6 @@ pyttsx3
 moviepy
 PIL
 bing_image_downloader
+edge_tts
+vtt_to_srt3
 ckiptagger
