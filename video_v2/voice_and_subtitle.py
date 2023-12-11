@@ -13,48 +13,49 @@ voice_list = ["zh-TW-HsiaoChenNeural", "zh-TW-HsiaoYuNeural", "zh-TW-YunJheNeura
 
 # generate voice
 async def voice(text) -> None:
-    communicate = edge_tts.Communicate(text, voice_list[0], rate = "+20%")
+    # communicate = edge_tts.Communicate(text, voice_list[0], rate = "+20%")
+    communicate = edge_tts.Communicate(text, voice_list[0])
     await communicate.save("voice.mp3")
+    # save subtitle timeline
     sub = []
     async for chunk in communicate.stream():
         if chunk["type"] == "WordBoundary":
-            print(chunk)
-            sub.append({"start": chunk["offset"], "duration": chunk["duration"], "text": chunk["text"]})
+            # print(chunk)
+            sub.append({"start": chunk["offset"] / 1e7, "duration": chunk["duration"] / 1e7, "text": chunk["text"]})
     return sub
 
+# sort keywords comparison
 def cmp(a, b):
     if a["head"] < b["head"]: return -1
     if a["head"] > b["head"]: return 1
     return 0
 
 
-punc = [chr(j) for j in (dict.fromkeys(i for i in range(sys.maxunicode)
-    if unicodedata.category(chr(i)).startswith('P')))]
 
 def get_timeline_of_keyword(sub, keyword, txt):
+    punc = [chr(j) for j in (dict.fromkeys(i for i in range(sys.maxunicode)
+        if unicodedata.category(chr(i)).startswith('P')))]
     keyword_pos = 0
     sub_pos = 0
-    keyword_time = []
+    keyword_time = [{"start": sub[0]["start"]}]
     cnt = 0
     dur = 0
     for txt_pos in range(len(txt)):
-        if txt[txt_pos] in punc: txt_pos += 1
+        if txt[txt_pos] in punc: continue
         else:
             cnt += 1
             if cnt > len(sub[sub_pos]["text"]):
                 sub_pos += 1
                 cnt = 1
                 dur += sub[sub_pos]["duration"]
-            if keyword[keyword_pos]["head"] == txt_pos:
-                keyword_time.append({"start": sub[sub_pos]["start"], "duration": 0})
-                dur = sub[sub_pos]["duration"]
-            if keyword[keyword_pos]["head"] + len(keyword[keyword_pos]["content"]) - 1 == txt_pos:
+            if keyword[keyword_pos + 1]["head"] == txt_pos:
                 keyword_time[-1]["duration"] = dur
                 keyword_pos += 1
-                if(keyword_pos == len(keyword)): break
-    # Insure the starting point has pictures
-    keyword_time[0]["duration"] += keyword_time[0]["start"]
-    keyword_time[0]["start"] = 0
+                keyword_time.append({"start": sub[sub_pos]["start"], "duration": 0})
+                dur = sub[sub_pos]["duration"]
+                if(keyword_pos == len(keyword) - 1): break
+    # Insure the ending point has picture
+    keyword_time[-1]["duration"] = sub[-1]["start"] + sub[-1]["duration"] - keyword_time[-1]["start"]
     return keyword_time
        
         
@@ -72,8 +73,8 @@ def main():
     keyword_time = get_timeline_of_keyword(sub, keyword, txt)
     with open("keyword_time.json", "w", encoding = "utf-8") as f:
         dump(keyword_time, f, indent = 4)
-    print(keyword)
-    print(keyword_time)
+    # print(keyword)
+    # print(keyword_time)
     
 
 

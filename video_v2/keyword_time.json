@@ -1,214 +1,214 @@
 [
     {
-        "start": 0,
-        "duration": 3208320
+        "start": 0.1,
+        "duration": 0.4125
     },
     {
-        "start": 5604160,
-        "duration": 5208320
+        "start": 0.6625,
+        "duration": 1.2
     },
     {
-        "start": 13729160,
-        "duration": 3750000
+        "start": 1.6375,
+        "duration": 2.125
     },
     {
-        "start": 34041660,
-        "duration": 5312490
+        "start": 4.075,
+        "duration": 0.9874999999999999
     },
     {
-        "start": 42270830,
-        "duration": 5208320
+        "start": 5.0625,
+        "duration": 1.35
     },
     {
-        "start": 51437500,
-        "duration": 3229160
+        "start": 6.1625,
+        "duration": 0.9249999999999999
     },
     {
-        "start": 56750000,
-        "duration": 2916660
+        "start": 6.8,
+        "duration": 0.9375
     },
     {
-        "start": 59666660,
-        "duration": 4895830
+        "start": 7.15,
+        "duration": 1.8375
     },
     {
-        "start": 77916660,
-        "duration": 5000000
+        "start": 9.35,
+        "duration": 0.7625
     },
     {
-        "start": 83020830,
-        "duration": 4062490
+        "start": 9.9625,
+        "duration": 1.8125
     },
     {
-        "start": 97812500,
-        "duration": 4375000
+        "start": 11.7375,
+        "duration": 2.925
     },
     {
-        "start": 123437500,
-        "duration": 2708330
+        "start": 14.8125,
+        "duration": 0.9
     },
     {
-        "start": 128333330,
-        "duration": 3125000
+        "start": 15.4,
+        "duration": 0.5375
     },
     {
-        "start": 138333330,
-        "duration": 1979160
+        "start": 16.6,
+        "duration": 2.1625
     },
     {
-        "start": 158854160,
-        "duration": 2708330
+        "start": 19.0625,
+        "duration": 1.5125
     },
     {
-        "start": 168437500,
-        "duration": 3541660
+        "start": 20.2125,
+        "duration": 0.925
     },
     {
-        "start": 172083330,
-        "duration": 4166660
+        "start": 20.65,
+        "duration": 1.8624999999999998
     },
     {
-        "start": 184895830,
-        "duration": 5937500
+        "start": 22.1875,
+        "duration": 0.925
     },
     {
-        "start": 193125000,
-        "duration": 4791660
+        "start": 23.175,
+        "duration": 1.35
     },
     {
-        "start": 200104160,
-        "duration": 5000000
+        "start": 24.0125,
+        "duration": 0.8
     },
     {
-        "start": 213229160,
-        "duration": 4270820
+        "start": 25.5875,
+        "duration": 1.875
     },
     {
-        "start": 229687500,
-        "duration": 3124990
+        "start": 27.5625,
+        "duration": 0.675
     },
     {
-        "start": 235833330,
-        "duration": 2500000
+        "start": 28.3,
+        "duration": 1.475
     },
     {
-        "start": 245416660,
-        "duration": 3645830
+        "start": 29.45,
+        "duration": 0.925
     },
     {
-        "start": 249166660,
-        "duration": 4062500
+        "start": 29.9,
+        "duration": 1.6875
     },
     {
-        "start": 261666660,
-        "duration": 4479160
+        "start": 31.4,
+        "duration": 0.8625
     },
     {
-        "start": 268541660,
-        "duration": 3645830
+        "start": 32.225,
+        "duration": 1.0750000000000002
     },
     {
-        "start": 274270830,
-        "duration": 3854160
+        "start": 32.9125,
+        "duration": 1.4125
     },
     {
-        "start": 289375000,
-        "duration": 4791660
+        "start": 34.725,
+        "duration": 1.6375000000000002
     },
     {
-        "start": 300937500,
-        "duration": 3958330
+        "start": 36.1125,
+        "duration": 1.7125
     },
     {
-        "start": 314687500,
-        "duration": 4270830
+        "start": 37.7625,
+        "duration": 1.6249999999999998
     },
     {
-        "start": 326666660,
-        "duration": 4270830
+        "start": 39.2,
+        "duration": 0.8875
     },
     {
-        "start": 336145830,
-        "duration": 2499989
+        "start": 40.3375,
+        "duration": 1.1875
     },
     {
-        "start": 344270830,
-        "duration": 5416660
+        "start": 41.3125,
+        "duration": 1.8874999999999997
     },
     {
-        "start": 365104160,
-        "duration": 3333330
+        "start": 43.8125,
+        "duration": 2.6374999999999997
     },
     {
-        "start": 387916660,
-        "duration": 2500000
+        "start": 46.55,
+        "duration": 1.2625
     },
     {
-        "start": 400937500,
-        "duration": 1041660
+        "start": 48.1125,
+        "duration": 2.0125
     },
     {
-        "start": 419791660,
-        "duration": 4791660
+        "start": 50.375,
+        "duration": 2.45
     },
     {
-        "start": 446458330,
-        "duration": 7604160
+        "start": 53.575,
+        "duration": 1.9000000000000004
     },
     {
-        "start": 462291660,
-        "duration": 6458320
+        "start": 55.475,
+        "duration": 3.9374999999999996
     },
     {
-        "start": 499583330,
-        "duration": 7395820
+        "start": 59.95,
+        "duration": 4.4624999999999995
     },
     {
-        "start": 550416660,
-        "duration": 2916660
+        "start": 66.05,
+        "duration": 2.0625
     },
     {
-        "start": 566145830,
-        "duration": 3958330
+        "start": 67.9375,
+        "duration": 6.575
     },
     {
-        "start": 636250000,
-        "duration": 11562490
+        "start": 76.35,
+        "duration": 2.975
     },
     {
-        "start": 660833330,
-        "duration": 4375000
+        "start": 79.3,
+        "duration": 1.25
     },
     {
-        "start": 671250000,
-        "duration": 2708330
+        "start": 80.55,
+        "duration": 0.325
     },
     {
-        "start": 671250000,
-        "duration": 2708330
+        "start": 80.55,
+        "duration": 0.65
     },
     {
-        "start": 674270830,
-        "duration": 2708330
+        "start": 80.9125,
+        "duration": 2.9875000000000003
     },
     {
-        "start": 708854160,
-        "duration": 6458320
+        "start": 85.0625,
+        "duration": 1.4375
     },
     {
-        "start": 722708330,
-        "duration": 2499990
+        "start": 86.725,
+        "duration": 0.5875
     },
     {
-        "start": 727604160,
-        "duration": 4583320
+        "start": 87.3125,
+        "duration": 1.1
     },
     {
-        "start": 739687500,
-        "duration": 5000000
+        "start": 88.7625,
+        "duration": 1.15
     },
     {
-        "start": 746354160,
-        "duration": 6874990
+        "start": 89.5625,
+        "duration": 0.8375000000000057
     }
 ]
