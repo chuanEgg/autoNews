@@ -4,11 +4,13 @@ transformers
 torch
 pyttsx3
 moviepy
-PIL
+pillow
 bing_image_downloader
 edge_tts
 vtt_to_srt3
 ckiptagger
 rembg
 requests
+opencv-python
+numpy
 # To generate video, you should insure that "微軟正黑體"(msjh.ttc) is in the root folder in ver 1 and 2
