@@ -13,4 +13,7 @@ rembg
 requests
 opencv-python
 numpy
+ckiptagger
+tensorflow # Compile tensorflow with care, might need to install CUDA toolkit
+gdown
 # To generate video, you should insure that "微軟正黑體"(msjh.ttc) is in the root folder in ver 1 and 2
