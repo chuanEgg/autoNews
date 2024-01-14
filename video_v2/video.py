@@ -2,9 +2,39 @@ from moviepy.editor import *
 from moviepy.video.tools.subtitles import SubtitlesClip
 import moviepy.video.fx.all as vfx
 from json import load
-from functools import cmp_to_key
+from PIL import Image, ImageFont, ImageDraw
 
-def video_with_subtitle(keyword, keyword_time, sub_txt):
+
+def subtitle_clip(subtitle_time):
+    # text image
+    font = ImageFont.truetype('msjh.ttc', 72)
+    for i in range(len(subtitle_time)):
+        # initialize image of subtitle
+        sub = subtitle_time[i]
+        img = Image.new('RGBA', (1920, 1080))
+        draw = ImageDraw.Draw(img)
+        # get the position of subtitle
+        left, top, right, bottom = font.getmask(sub["text"]).getbbox()
+        width = right - left
+        height = bottom - top
+        # draw the bg and text
+        draw.rectangle(((1920 - width) // 2 - 10, 1040 - height, (1920 + width) // 2 + 10, 1060), (0, 0, 0))
+        draw.text(((1920 - width) // 2, 1040 - height), sub["text"], fill = (255, 255, 255), font = font)
+        # save image
+        img.save(os.path.join("subtitle_image", f"{i}.png"))
+    
+    # subtitle clip
+    subtitle_clips = []
+    for i in range(len(subtitle_time)):
+        sub = subtitle_time[i]
+        clip = ImageClip(os.path.join("subtitle_image", f"{i}.png"), transparent = True).set_start(sub["start"]).set_duration(sub["duration"])
+        subtitle_clips.append(clip)
+    return subtitle_clips
+        
+
+
+
+def video_with_subtitle(keyword, keyword_time, subtitle_time):
     # print(len(keyword_time), len(keyword))
     clips = []
     audio = AudioFileClip("voice.mp3")
@@ -20,43 +50,34 @@ def video_with_subtitle(keyword, keyword_time, sub_txt):
         # adjust clip size
         if clip.size[0] > 1920: 
             clip = clip.resize(width = 1920)
-        clips.append(clip)
-    # for i in range(len(sub_txt)):
-    #     sub = TextClip(keyword[i][0], font="msjh.ttc", fontsize=60, color='white', bg_color="black").set_start(time).set_duration(audio.duration).set_pos(("center", "bottom"))
-    #     subs.append(sub)
-    #     time += audio.duration # this line is incorrect, fix it latter
+        clips.append(clip)    
         
 
 
     concat_clip = concatenate_videoclips(clips, method = "compose")
-    # concat_clip = concatenate_videoclips(clips)
-    video = concat_clip.set_audio(audio)
-    # video = CompositeVideoClip([concat_clip] + subs)
+    subtitle_clips = subtitle_clip(subtitle_time)
+    concat_clip_with_sub = CompositeVideoClip([concat_clip] + subtitle_clips)
+    video = concat_clip_with_sub.set_audio(audio)
     video.write_videofile("video.mp4", fps = 30, threads = 8)
     # close file
     for i in clips:
         i.close()
-    
+    for i in subtitle_clips:
+        i.close()
     
     
 
-
-# sort keywords comparison
-def cmp(a, b):
-    if a["head"] < b["head"]: return -1
-    if a["head"] > b["head"]: return 1
-    return 0
 
 def main():
     # read required file
-    with open("cut.json", "r", encoding = "utf-8") as f: 
-        sub_txt = load(f)
     with open("keyword.json", "r", encoding = "utf-8") as f: 
         keyword = load(f)
     with open("keyword_time.json", "r", encoding = "utf-8") as f: 
         keyword_time = load(f)
-    keyword = sorted(keyword, key = cmp_to_key(cmp))
-    video_with_subtitle(keyword, keyword_time, sub_txt)
+    with open("subtitle_time.json", "r", encoding = "utf-8") as f:
+        subtitle_time = load(f)
+    video_with_subtitle(keyword, keyword_time, subtitle_time)
+    
     
     
 if __name__ == "__main__":
