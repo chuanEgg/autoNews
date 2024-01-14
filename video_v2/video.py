@@ -37,7 +37,6 @@ def subtitle_clip(subtitle_time):
 def video_with_subtitle(keyword, keyword_time, subtitle_time):
     # print(len(keyword_time), len(keyword))
     clips = []
-    audio = AudioFileClip("voice.mp3")
     # time = 0
     # subs = []
     for i in range(len(keyword_time)):
@@ -57,6 +56,10 @@ def video_with_subtitle(keyword, keyword_time, subtitle_time):
     concat_clip = concatenate_videoclips(clips, method = "compose")
     subtitle_clips = subtitle_clip(subtitle_time)
     concat_clip_with_sub = CompositeVideoClip([concat_clip] + subtitle_clips)
+    
+    talk_audio = AudioFileClip("voice.mp3")
+    bg_audio = AudioFileClip("bg_music.mp3").volumex(0.1)
+    audio = CompositeAudioClip([talk_audio, bg_audio])
     video = concat_clip_with_sub.set_audio(audio)
     video.write_videofile("video.mp4", fps = 30, threads = 8)
     # close file
@@ -64,6 +67,10 @@ def video_with_subtitle(keyword, keyword_time, subtitle_time):
         i.close()
     for i in subtitle_clips:
         i.close()
+    talk_audio.close()
+    bg_audio.close()
+    audio.close()
+    video.close()
     
     
 
