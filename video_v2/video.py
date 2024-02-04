@@ -2,88 +2,125 @@ from moviepy.editor import *
 from moviepy.video.tools.subtitles import SubtitlesClip
 import moviepy.video.fx.all as vfx
 from json import load
-from PIL import Image, ImageFont, ImageDraw
-
 
 def subtitle_clip(subtitle_time):
-    # text image
-    font = ImageFont.truetype('msjh.ttc', 72)
-    for i in range(len(subtitle_time)):
-        # initialize image of subtitle
-        sub = subtitle_time[i]
-        img = Image.new('RGBA', (1920, 1080))
-        draw = ImageDraw.Draw(img)
-        # get the position of subtitle
-        left, top, right, bottom = font.getmask(sub["text"]).getbbox()
-        width = right - left
-        height = bottom - top
-        # draw the bg and text
-        draw.rectangle(((1920 - width) // 2 - 10, 1040 - height, (1920 + width) // 2 + 10, 1060), (0, 0, 0))
-        draw.text(((1920 - width) // 2, 1040 - height), sub["text"], fill = (255, 255, 255), font = font)
-        # save image
-        img.save(os.path.join("subtitle_image", f"{i}.png"))
-    
-    # subtitle clip
     subtitle_clips = []
     for i in range(len(subtitle_time)):
         sub = subtitle_time[i]
-        clip = ImageClip(os.path.join("subtitle_image", f"{i}.png"), transparent = True).set_start(sub["start"]).set_duration(sub["duration"])
+        clip = ImageClip(os.path.join("subtitle_image", f"{i}.png"), transparent = True).set_start(sub["start"]).set_duration(sub["duration"]).set_position((0, 0))
         subtitle_clips.append(clip)
     return subtitle_clips
         
 
 
 
-def video_with_subtitle(keyword, keyword_time, subtitle_time):
-    # print(len(keyword_time), len(keyword))
-    clips = []
-    # time = 0
-    # subs = []
+def image_and_video_clip(keyword_time, subtitle_time):
+    clips = {}
+    # audio clips
+    talk_audio = AudioFileClip("voice.mp3")
+    bg_audio = AudioFileClip("bg_music.mp3").set_duration(talk_audio.duration).volumex(0.1)
+    audio = CompositeAudioClip([talk_audio, bg_audio])
+    clips["talk_audio"] = talk_audio
+    clips["bg_audio"] = bg_audio
+    clips["audio"] = audio
+    
+    # image and video(gif) clips
+    image_and_video_clips = []
     for i in range(len(keyword_time)):
         # insert image or video
         try:
-            clip = ImageClip(os.path.join("image_and_video", f"{i}.jpg")).set_duration(keyword_time[i + 1]["start"] - keyword_time[i]["start"] if i < len(keyword_time) - 1 else keyword_time[i]["duration"]).resize(height = 1080)
+            clip = ImageClip(os.path.join("image_and_video", f"{i}.jpg")).set_duration(keyword_time[i + 1]["start"] - keyword_time[i]["start"] if i < len(keyword_time) - 1 else talk_audio.duration - keyword_time[i]["start"]).resize(height = 1080)
         except:
             video_clip = VideoFileClip(os.path.join("image_and_video", f"{i}.mp4")).resize(height = 1080).without_audio()
-            clip = vfx.loop(video_clip, duration = keyword_time[i + 1]["start"] - keyword_time[i]["start"] if i < len(keyword_time) - 1 else keyword_time[i]["duration"])
+            clip = vfx.loop(video_clip, duration = keyword_time[i + 1]["start"] - keyword_time[i]["start"] if i < len(keyword_time) - 1 else talk_audio.duration - keyword_time[i]["start"])
         # adjust clip size
         if clip.size[0] > 1920: 
             clip = clip.resize(width = 1920)
-        clips.append(clip)    
-        
-
-
-    concat_clip = concatenate_videoclips(clips, method = "compose")
+        image_and_video_clips.append(clip)
+    clips["image_and_video_clips"] = image_and_video_clips
+    
+    # concatenate image and video clips
+    concat_clip = concatenate_videoclips(clips["image_and_video_clips"], method = "compose")
+    clips["concat_clip"] = concat_clip
+    
+    # subtitle clip
     subtitle_clips = subtitle_clip(subtitle_time)
+    clips["subtitle_clips"] = subtitle_clips
+    
+    return clips
+    
+
+
+def export_video(clips, subtitle_time):
+    # composite concat clip and subtitle
+    concat_clip = clips["concat_clip"]
+    subtitle_clips = clips["subtitle_clips"]
     concat_clip_with_sub = CompositeVideoClip([concat_clip] + subtitle_clips)
+    clips["concat_clip_with_sub"] = concat_clip_with_sub
     
-    talk_audio = AudioFileClip("voice.mp3")
-    bg_audio = AudioFileClip("bg_music.mp3").volumex(0.1)
-    audio = CompositeAudioClip([talk_audio, bg_audio])
-    video = concat_clip_with_sub.set_audio(audio)
+    # set_audio
+    video = concat_clip_with_sub.set_audio(clips["audio"])
+    clips["video"] = video
+    
+    # export video
     video.write_videofile("video.mp4", fps = 30, threads = 8)
-    # close file
-    for i in clips:
-        i.close()
-    for i in subtitle_clips:
-        i.close()
-    talk_audio.close()
-    bg_audio.close()
-    audio.close()
-    video.close()
     
+    return clips
+    
+
+def close_file(clips):
+    for value in clips.values():
+        if isinstance(value, list):
+            for i in value:
+                i.close()
+        else: value.close()
+    
+
+def export_video_with_template(clips):
+    concat_clip = clips["concat_clip"].resize(width = 471).set_position((237, 236))
+    subtitle_clips = clips["subtitle_clips"]
+    audio = clips["audio"]
+    
+    # template
+    video_clip = VideoFileClip(os.path.join("image_and_video", "spongebob-news.mp4")).resize(height = 1080)
+    template_clip = vfx.loop(video_clip, duration = audio.duration)
+    clips["video_clip"] = video_clip
+    clips["template_clip"] = template_clip
+    
+    # composite template and concat clip
+    concat_clip_with_template = CompositeVideoClip([template_clip, concat_clip]).set_position((240, 0))
+    clips["concat_clip_with_template"] = concat_clip_with_template
+    
+    # add subtitle and set audio
+    empty = ImageClip(os.path.join("subtitle_image", "empty.png"), transparent = True).set_start(0).set_duration(audio.duration).set_position((0, 0))
+    video = CompositeVideoClip([empty, concat_clip_with_template] + subtitle_clips).set_audio(audio)
+    clips["empty"] = empty
+    clips["video"] = video
+    
+    # export video
+    video.write_videofile("video.mp4", fps = 30, threads = 8)
+    
+    return clips
     
 
 
 def main():
     # read required file
-    with open("keyword.json", "r", encoding = "utf-8") as f: 
-        keyword = load(f)
     with open("keyword_time.json", "r", encoding = "utf-8") as f: 
         keyword_time = load(f)
     with open("subtitle_time.json", "r", encoding = "utf-8") as f:
         subtitle_time = load(f)
-    video_with_subtitle(keyword, keyword_time, subtitle_time)
+        
+    # get all clips
+    clips = image_and_video_clip(keyword_time, subtitle_time)
+    
+    # export video
+    # clips = export_video(clips)
+    clips = export_video_with_template(clips)
+    
+    # close file
+    close_file(clips)
+    
     
     
     

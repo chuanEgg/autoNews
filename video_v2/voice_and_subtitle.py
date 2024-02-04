@@ -6,7 +6,7 @@ from functools import cmp_to_key
 import unicodedata
 import sys
 from bing_image_downloader import downloader
-import re
+from PIL import Image, ImageFont, ImageDraw
 
 # voice option
 voice_list = ["zh-TW-HsiaoChenNeural", "zh-TW-HsiaoYuNeural", "zh-TW-YunJheNeural"]
@@ -87,6 +87,30 @@ def get_timeline_of_subtitle(subs, txt):
     if dur != 0:
         sub_time.append({"start": start, "duration": dur, "text": sentence})
     return sub_time
+
+
+def subtitle_image(subtitle_time):
+    # create a empty image
+    img = Image.new('RGBA', (1920, 1080))
+    draw = ImageDraw.Draw(img)
+    img.save(os.path.join("subtitle_image", "empty.png"))
+    
+    # create subtitle image
+    font = ImageFont.truetype('msjh.ttc', 72)
+    for i in range(len(subtitle_time)):
+        # initialize image of subtitle
+        sub = subtitle_time[i]
+        img = Image.new('RGBA', (1920, 1080))
+        draw = ImageDraw.Draw(img)
+        # get the position of subtitle
+        left, top, right, bottom = font.getmask(sub["text"]).getbbox()
+        width = right - left
+        height = bottom - top
+        # draw the bg and text
+        draw.rectangle(((1920 - width) // 2 - 10, 1040 - height, (1920 + width) // 2 + 10, 1060), (0, 0, 0))
+        draw.text(((1920 - width) // 2, 1040 - height), sub["text"], fill = (255, 255, 255), font = font)
+        # save image
+        img.save(os.path.join("subtitle_image", f"{i}.png"))
             
             
         
@@ -99,23 +123,26 @@ def main():
     with open("data.txt", "r", encoding = "utf-8") as f:
         txt = f.read()
     sub = asyncio.run(voice(txt))
+    
+    # load and sort keywords
     with open("keyword.json", "r", encoding = "utf-8") as f: 
         keyword = load(f)
-    # keyword = [{'content': '舊金山', 'type': 'GPE', 'head': 8}, {'content': '拜登', 'type': 'PERSON', 'head': 0}, {'content': '習近平將', 'type': 'PERSON', 'head': 3}]
     keyword = sorted(keyword, key = cmp_to_key(cmp))
     with open("keyword.json", "w", encoding="utf-8") as f:
         dump(keyword, f, indent=4)
+    
+    # get the timeline of keywords
     keyword_time = get_timeline_of_keyword(sub, keyword, txt)
     with open("keyword_time.json", "w", encoding = "utf-8") as f:
         dump(keyword_time, f, indent = 4)
+        
+    # get the timeline of subtitle
     subtitle_time = get_timeline_of_subtitle(sub, txt)
-    # with open("cut.json", "r", encoding = "utf-8") as f:
-    #     print(len(load(f)), len(subtitle_time))
     with open("subtitle_time.json", "w", encoding = "utf-8") as f:
         dump(subtitle_time, f, indent = 4, ensure_ascii = False)
-    # print(keyword)
-    # print(keyword_time)
-    # print(sub)
+    
+    # generate subtitle image
+    subtitle_image(subtitle_time)
     
 
 
