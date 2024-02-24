@@ -5,8 +5,8 @@ import os
 from functools import cmp_to_key
 import unicodedata
 import sys
-from bing_image_downloader import downloader
 from PIL import Image, ImageFont, ImageDraw
+from shutil import rmtree
 
 # voice option
 voice_list = ["zh-TW-HsiaoChenNeural", "zh-TW-HsiaoYuNeural", "zh-TW-YunJheNeural"]
@@ -31,16 +31,6 @@ def cmp(a, b):
     if a["head"] > b["head"]: return 1
     return 0
 
-# clear existed file in the folder
-def clear_files_in_folder(folder_path):
-    # select all files in the folder
-    files = os.listdir(folder_path)
-    
-    # delete every file
-    for file_name in files:
-        file_path = os.path.join(folder_path, file_name)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
 
 # get the timeline of keyword
 def get_timeline_of_keyword(sub, keyword, txt):
@@ -147,6 +137,10 @@ def main():
     subtitle_time = get_timeline_of_subtitle(sub, txt)
     with open("subtitle_time.json", "w", encoding = "utf-8") as f:
         dump(subtitle_time, f, indent = 4, ensure_ascii = False)
+    
+    # clear subtitle image
+    rmtree("subtitle_image")
+    os.mkdir("subtitle_image")
     
     # generate subtitle image
     subtitle_image(subtitle_time)

@@ -9,6 +9,7 @@ from shutil import rmtree
 apikey = "AIzaSyCmeWu09YmT9sRwyfqnZBoGROEBhsHVsF0"  # click to set to your apikey
 ckey = "ytp_project"  # set the client_key for the integration and use the same value for all API calls
 
+# compare function for keywords
 def cmp(a, b):
     if a["head"] < b["head"]: return -1
     if a["head"] > b["head"]: return 1
@@ -43,16 +44,6 @@ def get_gif(keyword, id):
         with open(os.path.join("image_and_video", f"{id}.mp4"), "wb") as f:
             f.write(r.content)
 
-# clear existed file in the folder
-def clear_files_in_folder(folder_path):
-    # select all files in the folder
-    files = os.listdir(folder_path)
-    
-    # delete every file
-    for file_name in files:
-        file_path = os.path.join(folder_path, file_name)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
     
         
 def main():
@@ -62,7 +53,8 @@ def main():
     keyword = sorted(keyword, key = cmp_to_key(cmp))
     
     # clear existed files
-    clear_files_in_folder("image_and_video")
+    rmtree("image_and_video")
+    os.mkdir("image_and_video")
     
     # get images and GIFs
     for i in range(len(keyword)):

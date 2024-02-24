@@ -51,7 +51,7 @@ def image_and_video_clip(keyword_time, subtitle_time):
     
 
 
-def export_video(clips, subtitle_time):
+def export_video(clips):
     # composite concat clip and subtitle
     concat_clip = clips["concat_clip"]
     subtitle_clips = clips["subtitle_clips"]
