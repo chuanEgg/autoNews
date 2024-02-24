@@ -82,7 +82,7 @@ def export_video_with_template(clips):
     audio = clips["audio"]
     
     # template
-    video_clip = VideoFileClip(os.path.join("image_and_video", "spongebob-news.mp4")).resize(height = 1080)
+    video_clip = VideoFileClip(os.path.join("material", "spongebob-news.mp4")).resize(height = 1080)
     template_clip = vfx.loop(video_clip, duration = audio.duration)
     clips["video_clip"] = video_clip
     clips["template_clip"] = template_clip

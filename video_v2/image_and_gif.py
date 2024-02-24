@@ -14,6 +14,7 @@ def cmp(a, b):
     if a["head"] > b["head"]: return 1
     return 0
 
+# download images from bing
 def get_image(keyword, id):
     while True:
         try:
@@ -28,6 +29,7 @@ def get_image(keyword, id):
             break
         except: pass
 
+# download videos of GIF from tenor
 def get_gif(keyword, id):
     r = requests.get(
     "https://tenor.googleapis.com/v2/search?q=%s&key=%s&client_key=%s&limit=%s" % (keyword, apikey, ckey,  1))
@@ -40,16 +42,32 @@ def get_gif(keyword, id):
         r = requests.get(vidoe_url, stream=True)
         with open(os.path.join("image_and_video", f"{id}.mp4"), "wb") as f:
             f.write(r.content)
+
+# clear existed file in the folder
+def clear_files_in_folder(folder_path):
+    # select all files in the folder
+    files = os.listdir(folder_path)
+    
+    # delete every file
+    for file_name in files:
+        file_path = os.path.join(folder_path, file_name)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
     
         
 def main():
+    # sort keywords
     with open("keyword.json", "r", encoding = "utf-8") as f:
         keyword = load(f)
     keyword = sorted(keyword, key = cmp_to_key(cmp))
     
+    # clear existed files
+    clear_files_in_folder("image_and_video")
+    
+    # get images and GIFs
     for i in range(len(keyword)):
         print(keyword[i]["type"])
-        if keyword[i]["type"] == "PERSON" or keyword[i]["type"] == "GPE":
+        if keyword[i]["type"] in ["GPE", "PERSON", "ORG", "NORP", "LOC", "FAC", "WORK_OF_ART"]:
             get_image(keyword[i]["content"], i)
         else:
             get_gif(keyword[i]["content"], i)

@@ -31,8 +31,18 @@ def cmp(a, b):
     if a["head"] > b["head"]: return 1
     return 0
 
+# clear existed file in the folder
+def clear_files_in_folder(folder_path):
+    # select all files in the folder
+    files = os.listdir(folder_path)
+    
+    # delete every file
+    for file_name in files:
+        file_path = os.path.join(folder_path, file_name)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
 
-
+# get the timeline of keyword
 def get_timeline_of_keyword(sub, keyword, txt):
     punc = [chr(j) for j in (dict.fromkeys(i for i in range(sys.maxunicode)
         if unicodedata.category(chr(i)).startswith('P')))]
@@ -59,7 +69,8 @@ def get_timeline_of_keyword(sub, keyword, txt):
     keyword_time[-1]["duration"] = sub[-1]["start"] + sub[-1]["duration"] - keyword_time[-1]["start"]
     return keyword_time
        
-       
+
+# get the timeline of the subtitle
 def get_timeline_of_subtitle(subs, txt):
     punc = [chr(j) for j in (dict.fromkeys(i for i in range(sys.maxunicode)
         if unicodedata.category(chr(i)).startswith('P')))]
@@ -88,7 +99,7 @@ def get_timeline_of_subtitle(subs, txt):
         sub_time.append({"start": start, "duration": dur, "text": sentence})
     return sub_time
 
-
+# generate subtitle image
 def subtitle_image(subtitle_time):
     # create a empty image
     img = Image.new('RGBA', (1920, 1080))
@@ -112,11 +123,7 @@ def subtitle_image(subtitle_time):
         # save image
         img.save(os.path.join("subtitle_image", f"{i}.png"))
             
-            
-        
-    
-        
-        
+
 
 def main():
     # generate voice and subtitle
