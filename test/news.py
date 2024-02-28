@@ -15,7 +15,7 @@ def get_news(keyword):
 
 def save_to_json(result):
     with open("news.json", "w", encoding="utf-8") as f:
-        json.dump(result, f)
+        json.dump(result, f, ensure_ascii = False, indent = 4)
 
 def main():
     keyword = input("請輸入關鍵字：")

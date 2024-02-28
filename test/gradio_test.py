@@ -1,16 +1,62 @@
 import gradio as gr
 from time import sleep
 import os
+import requests
+from json import loads, dump
+import re
+from datetime import datetime, timedelta
+from functools import cmp_to_key
 
-def greet(name):
-    # sleep(3)
-    return gr.Video("C:\\Users\\muen1\\OneDrive\\附件\\程式1\\Project\ytp-project\\video_v2\\video.mp4")
-demo = gr.Interface(
-    fn=greet,
-    # 自定義輸入框
-    # 具體設定方法檢視官方檔案
-    inputs=gr.Textbox(lines=3, placeholder="Please input the keyword to generate the video",label="Video keyword"),
-    outputs=gr.Video(autoplay = True),
-    allow_flagging="never", 
-).queue()
-demo.launch()
+
+def cmp(a, b):
+    if a["times_in_number"] > b["times_in_number"]: return -1
+    if a["times_in_number"] < b["times_in_number"]: return 1
+    if a["date"] > b["date"]: return -1
+    if a["date"] < b["date"]: return 1
+    return 0
+
+def trends_crawler(date):
+    url = f"https://trends.google.com.tw/trends/api/dailytrends?hl=zh-TW&tz=-480&ed={date}&geo=TW&ns=15"
+    r = requests.get(url)
+    res = loads(re.sub(r'\)\]\}\',\n', '', r.text))['default']['trendingSearchesDays'][0]['trendingSearches']
+    trends_per_date = []
+    for i in res:
+        trends_per_date.append({"title": i["title"]["query"], "times_in_number": int(i["formattedTraffic"].replace("萬", "0000")[:-1]), "times_in_text": i["formattedTraffic"], "date": date})
+    # with open(f"{date}.json", "w", encoding = "utf-8") as f:
+    #     dump(res, f, indent = 4, ensure_ascii = False)
+    return trends_per_date
+     
+
+def suggestion_text_form():
+    # crawl search trends in the last 7 days
+    trends = []
+    end_date = datetime.today()
+    for i in range(7):
+        date = end_date - timedelta(i)
+        str_date = datetime.strftime(date, "%Y%m%d")
+        trends += [j for j in trends_crawler(str_date) if not any(j["title"] == k["title"] for k in trends)]
+    trends = sorted(trends, key = cmp_to_key(cmp))
+    
+    # demonstrate top 10 search in markdown
+    res = "### 最近 Google 熱門搜尋關鍵字\n\n| 關鍵字 | 搜尋次數 |\n|-|-|\n"
+    for i in range(10):
+        res += f"| {trends[i]['title']} | {trends[i]['times_in_text']} |\n"
+    return res
+
+def generate_video(name):
+    
+    return gr.Video("video.mp4")
+
+def main():
+    demo = gr.Interface(
+        title = "欸癌新聞播報",
+        description = "這是一個方便的新聞影音產生工具，只要輸入新聞關鍵字，就能在 10 分鐘內產生 1 分鐘的新聞短影音", 
+        fn=generate_video,
+        inputs = gr.Textbox(lines=3, placeholder="Please input the keyword to generate the video",label="Video keyword"),
+        outputs = gr.Video(autoplay = True),
+        article = suggestion_text_form(),
+        allow_flagging = "never", 
+    ).queue()
+    demo.launch()
+
+if __name__ == "__main__": main()

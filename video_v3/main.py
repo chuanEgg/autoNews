@@ -12,8 +12,11 @@ from PIL import Image, ImageFont, ImageDraw
 from moviepy.editor import *
 from moviepy.video.tools.subtitles import SubtitlesClip
 import moviepy.video.fx.all as vfx
+import gradio as gr
 # count execution time
 from time import time
+import re
+from datetime import datetime, timedelta
 
 '''
 general setting
@@ -42,7 +45,7 @@ function
 
 # function about download images and gifs
 # compare function for keywords
-def cmp(a, b):
+def keyword_cmp(a, b):
     if a["head"] < b["head"]: return -1
     if a["head"] > b["head"]: return 1
     return 0
@@ -83,7 +86,7 @@ def download_image_and_gif():
     # sort keywords
     with open(os.path.join("data", "keyword.json"), "r", encoding = "utf-8") as f:
         keyword = load(f)
-    keyword = sorted(keyword, key = cmp_to_key(cmp))
+    keyword = sorted(keyword, key = cmp_to_key(keyword_cmp))
     
     # clear existed files
     rmtree(os.path.join("data", "image_and_video"), ignore_errors=True)
@@ -96,6 +99,8 @@ def download_image_and_gif():
             get_image(keyword[i]["content"], i)
         else:
             get_gif(keyword[i]["content"], i)
+    
+    print("Success for downloading image and gif!")
 
 
 # ----------------------------------------------------------------------------------------- #
@@ -182,7 +187,7 @@ def voice_and_timeline():
     # load and sort keywords
     with open(os.path.join("data", "keyword.json"), "r", encoding = "utf-8") as f: 
         keyword = load(f)
-    keyword = sorted(keyword, key = cmp_to_key(cmp))
+    keyword = sorted(keyword, key = cmp_to_key(keyword_cmp))
     with open(os.path.join("data", "keyword.json"), "w", encoding="utf-8") as f:
         dump(keyword, f, indent=4)
     
@@ -195,6 +200,8 @@ def voice_and_timeline():
     subtitle_time = get_timeline_of_subtitle(sub, txt)
     with open(os.path.join("data", "subtitle_time.json"), "w", encoding = "utf-8") as f:
         dump(subtitle_time, f, indent = 4, ensure_ascii = False)
+    
+    print("Success for generating voice and timeline of keywords and subtitle!")
 
 
 # ----------------------------------------------------------------------------------------- #
@@ -231,6 +238,8 @@ def subtitle_image():
         draw.text(((1920 - width) // 2, 1040 - height), sub["text"], fill = (255, 255, 255), font = font)
         # save image
         img.save(os.path.join("data", "subtitle_image", f"{i}.png"))
+    
+    print("Success for generating subtitle image!")
 
 
 # ----------------------------------------------------------------------------------------- #
@@ -325,6 +334,8 @@ def export_video_with_template(clips):
     
     return clips
 
+
+
 # close open clips
 def close_file(clips):
     for value in clips.values():
@@ -354,7 +365,75 @@ def generate_video():
     close_file(clips)
 
 
+# ----------------------------------------------------------------------------------------- #
 
+
+# function about ui
+# compare function for google trends result
+def trends_cmp(a, b):
+    if a["times_in_number"] > b["times_in_number"]: return -1
+    if a["times_in_number"] < b["times_in_number"]: return 1
+    if a["date"] > b["date"]: return -1
+    if a["date"] < b["date"]: return 1
+    return 0
+
+
+
+# crawl google trends for specific date
+def trends_crawler(date):
+    url = f"https://trends.google.com.tw/trends/api/dailytrends?hl=zh-TW&tz=-480&ed={date}&geo=TW&ns=15"
+    r = requests.get(url)
+    res = loads(re.sub(r'\)\]\}\',\n', '', r.text))['default']['trendingSearchesDays'][0]['trendingSearches']
+    trends_per_date = []
+    for i in res:
+        trends_per_date.append({"title": i["title"]["query"], "times_in_number": int(i["formattedTraffic"].replace("萬", "0000")[:-1]), "times_in_text": i["formattedTraffic"], "date": date})
+    # with open(f"{date}.json", "w", encoding = "utf-8") as f:
+    #     dump(res, f, indent = 4, ensure_ascii = False)
+    return trends_per_date
+
+
+
+# generate suggestion of keyword for user (getting data from google trend in the past week)
+def suggestion_text_form():
+    # crawl search trends in the last 7 days
+    trends = []
+    end_date = datetime.today()
+    for i in range(7):
+        date = end_date - timedelta(i)
+        str_date = datetime.strftime(date, "%Y%m%d")
+        trends += [j for j in trends_crawler(str_date) if not any(j["title"] == k["title"] for k in trends)]
+    trends = sorted(trends, key = cmp_to_key(trends_cmp))
+    
+    # demonstrate top 10 search in markdown
+    res = "### 最近 Google 熱門搜尋關鍵字\n\n| 關鍵字 | 搜尋次數 |\n|-|-|\n"
+    for i in range(10):
+        res += f"| {trends[i]['title']} | {trends[i]['times_in_text']} |\n"
+    return res
+
+
+
+# after submit the keyword, start generating video
+def start_generate_video(name):
+    download_image_and_gif()
+    voice_and_timeline()
+    subtitle_image()
+    generate_video()
+    return gr.Video("video.mp4")
+
+
+
+# generate user interface
+def UI():
+    demo = gr.Interface(
+        title = "欸癌新聞播報",
+        description = "這是一個方便的新聞影音產生工具，只要輸入新聞關鍵字，就能在 10 分鐘內產生 1 分鐘的新聞短影音", 
+        fn=start_generate_video,
+        inputs = gr.Textbox(lines=3, placeholder="Please input the keyword to generate the video",label="新聞影片關鍵字"),
+        outputs = gr.Video(autoplay = True),
+        article = suggestion_text_form(),
+        allow_flagging = "never", 
+    ).queue()
+    demo.launch()
 
 
 
@@ -364,10 +443,7 @@ def generate_video():
 
 def main():
     start_time = time()
-    download_image_and_gif()
-    voice_and_timeline()
-    subtitle_image()
-    generate_video()
+    UI()
     end_time = time()
     duration = end_time - start_time
     print(f"Execution time: {round(duration // 60)}:{round(duration) % 60}")
