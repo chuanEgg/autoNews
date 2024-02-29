@@ -373,7 +373,7 @@ def subtitle_image():
     img.save(os.path.join("data", "subtitle_image", "empty.png"))
     
     # create subtitle image
-    font = ImageFont.truetype(os.path.join("data", "material", "msjh.ttc"), 72)
+    font = ImageFont.truetype(os.path.join("material", "msjh.ttc"), 72)
     for i in range(len(subtitle_time)):
         # initialize image of subtitle
         sub = subtitle_time[i]
@@ -409,7 +409,7 @@ def image_and_video_clip(keyword_time, subtitle_time):
     clips = {}
     # audio clips
     talk_audio = AudioFileClip(os.path.join("data", "voice.mp3"))
-    bg_audio = AudioFileClip(os.path.join("data", "material", "bg_music.mp3")).set_duration(talk_audio.duration).volumex(0.1)
+    bg_audio = AudioFileClip(os.path.join("material", "bg_music.mp3")).set_duration(talk_audio.duration).volumex(0.1)
     audio = CompositeAudioClip([talk_audio, bg_audio])
     clips["talk_audio"] = talk_audio
     clips["bg_audio"] = bg_audio
@@ -464,7 +464,7 @@ def export_video_with_template(clips):
     audio = clips["audio"]
     
     # template
-    video_clip = VideoFileClip(os.path.join("data", "material", "spongebob-news.mp4")).resize(height = 1080)
+    video_clip = VideoFileClip(os.path.join("material", "spongebob-news.mp4")).resize(height = 1080)
     template_clip = vfx.loop(video_clip, duration = audio.duration)
     clips["video_clip"] = video_clip
     clips["template_clip"] = template_clip
