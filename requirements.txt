@@ -18,4 +18,6 @@ ckiptagger
 tensorflow # Compile tensorflow with care, might need to install CUDA toolkit
 gdown
 gradio
+gnews
+newspaper3k
 # To generate video in ver 1 or 2, you should insure that "微軟正黑體"(msjh.ttc) is in the root folder
