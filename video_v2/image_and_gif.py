@@ -1,5 +1,5 @@
 from json import load, loads
-from bing_image_downloader import downloader
+from better_bing_image_downloader import downloader
 import os
 import requests
 from functools import cmp_to_key
@@ -19,13 +19,13 @@ def keyword_cmp(a, b):
 def get_image(keyword, id):
     # while True:
     #     try:
-    downloader.download(keyword, \
-    limit = 1, output_dir = "image_and_video", force_replace = True, filter = "photo")
-    with open(os.path.join("image_and_video", keyword, os.listdir(os.path.join("image_and_video", keyword))[0]), "rb") as f:
+    downloader(keyword, \
+    limit = 1, output_dir = os.path.join("data", "image_and_video"), force_replace = True, filter = "photo")
+    with open(os.path.join("data", "image_and_video", keyword, os.listdir(os.path.join("data", "image_and_video", keyword))[0]), "rb") as f:
         img = f.read()
-    with open(os.path.join("image_and_video", f"{id}.jpg"), "wb") as f:
+    with open(os.path.join("data", "image_and_video", f"{id}.jpg"), "wb") as f:
         f.write(img)
-    rmtree(os.path.join("image_and_video", keyword))
+    rmtree(os.path.join("data", "image_and_video", keyword))
             
             # break
         # except: pass

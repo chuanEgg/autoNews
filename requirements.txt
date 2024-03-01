@@ -6,7 +6,7 @@ pyttsx3
 moviepy
 pillow
 ffmpeg
-bing_image_downloader
+better_bing_image_downloader
 edge_tts
 vtt_to_srt3
 ckiptagger

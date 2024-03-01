@@ -1,6 +1,6 @@
 from json import load, loads, dump
 import os
-from bing_image_downloader import downloader
+from better_bing_image_downloader import downloader
 import requests
 from functools import cmp_to_key
 from shutil import rmtree
@@ -102,9 +102,11 @@ def get_gpt_response(openai_api_key, keyword):
 # function about geting the keywords from the context
 # download ckiptagger model
 def download_model():
-    if not os.path.isfile(os.path.join("data", "data.zip")):
+    if not os.path.isfile(os.path.join("data", "ckiptagger_model", "data.zip")):
+        rmtree(os.path.join("data", "ckiptagger_model"), ignore_errors=True)
+        os.mkdir(os.path.join("data", "ckiptagger_model"))
         print("Downloading model...")
-        data_utils.download_data_gdown("./data") # download
+        data_utils.download_data_gdown(os.path.join("data", "ckiptagger_model")) # download
         print("Downloaded model")
     else:
         print("Model exists")
@@ -117,9 +119,9 @@ def read_data():
 
 # extract keywords from context
 def extract_keywords(data):
-    ws = WS(os.path.join("data", "ckiptagger_model"))
-    pos = POS(os.path.join("data", "ckiptagger_model"))
-    ner = NER(os.path.join("data", "ckiptagger_model"))
+    ws = WS(os.path.join("data", "ckiptagger_model", "data"))
+    pos = POS(os.path.join("data", "ckiptagger_model", "data"))
+    ner = NER(os.path.join("data", "ckiptagger_model", "data"))
 
     line = []
     line.append(data)
@@ -204,7 +206,7 @@ def keyword_cmp(a, b):
 def get_image(keyword, id):
     while True:
         try:
-            downloader.download(keyword, \
+            downloader(keyword, \
             limit = 1, output_dir = os.path.join("data", "image_and_video"), force_replace = True, filter = "photo")
             with open(os.path.join("data", "image_and_video", keyword, os.listdir(os.path.join("data", "image_and_video", keyword))[0]), "rb") as f:
                 img = f.read()
@@ -564,12 +566,16 @@ def suggestion_text_form():
 
 # after submit the keyword, start generating video
 def start_generate_video(keyword):
+    start_time = time()
     get_gpt_response(openai_api_key, keyword)
     get_keywords_from_context()
     download_image_and_gif()
     voice_and_timeline()
     subtitle_image()
     generate_video()
+    end_time = time()
+    duration = end_time - start_time
+    print(f"Execution time: {round(duration // 60)}:{('0' + str(round(duration) % 60)) if len(round(duration) % 60) == 1 else str(round(duration) % 60)}")
     return gr.Video("video.mp4")
 
 
@@ -594,11 +600,8 @@ def UI():
 
 
 def main():
-    start_time = time()
     UI()
-    end_time = time()
-    duration = end_time - start_time
-    print(f"Execution time: {round(duration // 60)}:{round(duration) % 60}")
+    
     
     
 if __name__ == "__main__":
