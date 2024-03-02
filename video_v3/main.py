@@ -2,7 +2,6 @@ from json import load, loads, dump
 import os
 from better_bing_image_downloader import downloader
 import requests
-from functools import cmp_to_key
 from shutil import rmtree
 import edge_tts
 import asyncio
@@ -13,13 +12,13 @@ from moviepy.editor import *
 from moviepy.video.tools.subtitles import SubtitlesClip
 import moviepy.video.fx.all as vfx
 import gradio as gr
-# count execution time
-from time import time
+from time import time  # count execution time
 import re
 from datetime import datetime, timedelta
 import openai
 from gnews import GNews
 from ckiptagger import data_utils, WS, POS, NER
+import logging
 
 
 '''
@@ -27,6 +26,7 @@ general setting
     openai api key
     tenor setting
     voice option for edge-tts
+    turn off debug logging
 '''
 # openai api key
 with open(os.path.join("data", "OpenAI_API_Key.txt"), "r") as f:
@@ -38,6 +38,10 @@ ckey = "ytp_project"  # set the client_key for the integration and use the same 
 
 # voice option
 voice_list = ["zh-TW-HsiaoChenNeural", "zh-TW-HsiaoYuNeural", "zh-TW-YunJheNeural"]
+
+# turn off debug logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 # ----------------------------------------------------------------------------------------- #
@@ -74,7 +78,7 @@ def get_gpt_response(openai_api_key, keyword):
 
     # get news materials from google news
     content = f'''
-    Craft a slyly ironic digest in Traditional Chinese, encapsulating the essence of Bill Maher's renowned political satire. Condense it to 400-450 characters, channel Maher's tone without first-person or symbols like "!", "「", "」", "哈", "哇", "嘿", "呀".Mimic Maher's wit. Dismiss the source with nonchalance, ensuring your response is a comedic masterpiece, dripping with Maher's distinctive humor.|
+    Craft a slyly ironic digest in Traditional Chinese, encapsulating the essence of Bill Maher's renowned political satire. Condense it to 300-350 characters, channel Maher's tone without first-person or symbols like "!", "「", "」", "哈", "哇", "嘿", "呀".Mimic Maher's wit. Dismiss the source with nonchalance, ensuring your response is a comedic masterpiece, dripping with Maher's distinctive humor.|
     Article:
     """
     {get_news(keyword)}
@@ -89,7 +93,6 @@ def get_gpt_response(openai_api_key, keyword):
     temperature=1.2,
     messages = prompt)
 
-    print(response)
     # write context into text file
     with open(os.path.join("data", "data.txt"), "w", encoding = "utf-8") as f:
         f.write(response["choices"][0]["message"]["content"])
@@ -166,7 +169,7 @@ def remove_overlapping_keywords(keywords):
     to_delete = []
     for i in keywords:
         for j in keywords:
-            if i["head"] < j["head"] and i["head"] + len(i["content"]) >= (j["head"]+len(j["content"])):
+            if i != j and i["head"] <= j["head"] and i["head"] + len(i["content"]) >= j["head"]:
                 to_delete.append(j)
 
     for j in to_delete:
@@ -179,7 +182,7 @@ def remove_overlapping_keywords(keywords):
 def save_keywords(keywords):
     print("Saving keywords to keywords.json")
     with open(os.path.join("data", "keywords.json") ,"w", encoding = "utf-8") as f:
-        dump(keywords, f, ensure_ascii=False)
+        dump(keywords, f, ensure_ascii=False, indent=4)
 
 
 
@@ -196,12 +199,6 @@ def get_keywords_from_context():
 
 
 # function about download images and gifs
-# compare function for keywords
-def keyword_cmp(a, b):
-    if a["head"] < b["head"]: return -1
-    if a["head"] > b["head"]: return 1
-    return 0
-
 # download images from bing
 def get_image(keyword, id):
     while True:
@@ -238,7 +235,7 @@ def download_image_and_gif():
     # sort keywords
     with open(os.path.join("data", "keywords.json"), "r", encoding = "utf-8") as f:
         keyword = load(f)
-    keyword = sorted(keyword, key = cmp_to_key(keyword_cmp))
+    keyword = sorted(keyword, key=(lambda x: x["head"]))
     
     # clear existed files
     rmtree(os.path.join("data", "image_and_video"), ignore_errors=True)
@@ -246,7 +243,6 @@ def download_image_and_gif():
     
     # get images and GIFs
     for i in range(len(keyword)):
-        print(keyword[i]["type"])
         if keyword[i]["type"] in ["GPE", "PERSON", "ORG", "NORP", "LOC", "FAC", "WORK_OF_ART"]:
             get_image(keyword[i]["content"], i)
         else:
@@ -274,10 +270,10 @@ async def voice(text) -> None:
 # get the timeline of keyword
 def get_timeline_of_keyword(sub, keyword, txt):
     punc = [chr(j) for j in (dict.fromkeys(i for i in range(sys.maxunicode)
-        if unicodedata.category(chr(i)).startswith('P')))]
+        if unicodedata.category(chr(i)).startswith('P')))] + [" ", "\n"]
     keyword_pos = 0
     sub_pos = 0
-    keyword_time = [{"start": sub[0]["start"]}]
+    keyword_time = [{"start": sub[0]["start"], "duration": 0}]
     cnt = 0
     dur = 0
     for txt_pos in range(len(txt)):
@@ -301,8 +297,8 @@ def get_timeline_of_keyword(sub, keyword, txt):
 # get the timeline of the subtitle
 def get_timeline_of_subtitle(subs, txt):
     punc = [chr(j) for j in (dict.fromkeys(i for i in range(sys.maxunicode)
-        if unicodedata.category(chr(i)).startswith('P')))]
-    sep_punc = ["，", "。", "？", "：", "；", "！", ",", "?", ":", ";"]
+        if unicodedata.category(chr(i)).startswith('P')))] + [" ", "\n"]
+    sep_punc = ["，", "。", "？", "：", "；", "！", ",", "?", ":", ";", "\n"]
     sub_time = []
     sentence = ""
     start = 0
@@ -313,18 +309,17 @@ def get_timeline_of_subtitle(subs, txt):
         pos += len(sub["text"])
         sentence += sub["text"]
         dur += sub["duration"]
-        # if pos + 1 < len(txt): print(txt[pos], txt[pos + 1])
-        if i != len(subs) - 1 and txt[pos + 1] in sep_punc:
-            pos += 1
-            sub_time.append({"start": start, "duration": dur, "text": sentence})
-            start = subs[i + 1]["start"]
-            dur = 0
-            sentence = ""
-        elif i != len(subs) - 1 and txt[pos + 1] in punc: 
-            pos += 1
-            sentence += txt[pos]
-    if dur != 0:
-        sub_time.append({"start": start, "duration": dur, "text": sentence})
+        while pos + 1 < len(txt) and txt[pos + 1] in punc: 
+            if txt[pos + 1] in sep_punc and not all(char in punc for char in sentence):
+                pos += 1
+                sub_time.append({"start": start, "duration": dur, "text": sentence})
+                if i != len(subs) - 1:
+                    start = subs[i + 1]["start"]
+                    dur = 0
+                    sentence = ""
+            else:
+                pos += 1
+                if txt[pos] != "\n": sentence += txt[pos]
     return sub_time
 
 
@@ -336,17 +331,12 @@ def voice_and_timeline():
         txt = f.read()
     sub = asyncio.run(voice(txt))
     
-    # load and sort keywords
+    # get the timeline of keywords
     with open(os.path.join("data", "keywords.json"), "r", encoding = "utf-8") as f: 
         keyword = load(f)
-    keyword = sorted(keyword, key = cmp_to_key(keyword_cmp))
-    with open(os.path.join("data", "keywords.json"), "w", encoding="utf-8") as f:
-        dump(keyword, f, indent=4)
-    
-    # get the timeline of keywords
     keyword_time = get_timeline_of_keyword(sub, keyword, txt)
     with open(os.path.join("data", "keyword_time.json"), "w", encoding = "utf-8") as f:
-        dump(keyword_time, f, indent = 4)
+        dump(keyword_time, f, indent = 4, ensure_ascii=False)
         
     # get the timeline of subtitle
     subtitle_time = get_timeline_of_subtitle(sub, txt)
@@ -521,16 +511,6 @@ def generate_video():
 
 
 # function about ui
-# compare function for google trends result
-def trends_cmp(a, b):
-    if a["times_in_number"] > b["times_in_number"]: return -1
-    if a["times_in_number"] < b["times_in_number"]: return 1
-    if a["date"] > b["date"]: return -1
-    if a["date"] < b["date"]: return 1
-    return 0
-
-
-
 # crawl google trends for specific date
 def trends_crawler(date):
     url = f"https://trends.google.com.tw/trends/api/dailytrends?hl=zh-TW&tz=-480&ed={date}&geo=TW&ns=15"
@@ -538,7 +518,7 @@ def trends_crawler(date):
     res = loads(re.sub(r'\)\]\}\',\n', '', r.text))['default']['trendingSearchesDays'][0]['trendingSearches']
     trends_per_date = []
     for i in res:
-        trends_per_date.append({"title": i["title"]["query"], "times_in_number": int(i["formattedTraffic"].replace("萬", "0000")[:-1]), "times_in_text": i["formattedTraffic"], "date": date})
+        trends_per_date.append({"title": i["title"]["query"], "times_in_number": int(i["formattedTraffic"].replace("萬", "0000")[:-1]), "times_in_text": i["formattedTraffic"], "date": int(date)})
     # with open(f"{date}.json", "w", encoding = "utf-8") as f:
     #     dump(res, f, indent = 4, ensure_ascii = False)
     return trends_per_date
@@ -554,7 +534,7 @@ def suggestion_text_form():
         date = end_date - timedelta(i)
         str_date = datetime.strftime(date, "%Y%m%d")
         trends += [j for j in trends_crawler(str_date) if not any(j["title"] == k["title"] for k in trends)]
-    trends = sorted(trends, key = cmp_to_key(trends_cmp))
+    trends = sorted(trends, key=lambda x: (-x["times_in_number"], -x["date"]))
     
     # demonstrate top 10 search in markdown
     res = "### 最近 Google 熱門搜尋關鍵字\n\n| 關鍵字 | 搜尋次數 |\n|-|-|\n"
@@ -575,7 +555,7 @@ def start_generate_video(keyword):
     generate_video()
     end_time = time()
     duration = end_time - start_time
-    print(f"Execution time: {round(duration // 60)}:{('0' + str(round(duration) % 60)) if len(round(duration) % 60) == 1 else str(round(duration) % 60)}")
+    print(f"Execution time: {round(duration // 60)}:{('0' + str(round(duration) % 60)) if len(str(round(duration) % 60)) == 1 else str(round(duration) % 60)}")
     return gr.Video("video.mp4")
 
 
@@ -600,6 +580,7 @@ def UI():
 
 
 def main():
+    # start up user interfac
     UI()
     
     

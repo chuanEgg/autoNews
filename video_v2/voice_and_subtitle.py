@@ -35,10 +35,10 @@ def cmp(a, b):
 # get the timeline of keyword
 def get_timeline_of_keyword(sub, keyword, txt):
     punc = [chr(j) for j in (dict.fromkeys(i for i in range(sys.maxunicode)
-        if unicodedata.category(chr(i)).startswith('P')))]
+        if unicodedata.category(chr(i)).startswith('P')))] + [" ", "\n"]
     keyword_pos = 0
     sub_pos = 0
-    keyword_time = [{"start": sub[0]["start"]}]
+    keyword_time = [{"start": sub[0]["start"], "duration": 0}]
     cnt = 0
     dur = 0
     for txt_pos in range(len(txt)):
@@ -63,8 +63,8 @@ def get_timeline_of_keyword(sub, keyword, txt):
 # get the timeline of the subtitle
 def get_timeline_of_subtitle(subs, txt):
     punc = [chr(j) for j in (dict.fromkeys(i for i in range(sys.maxunicode)
-        if unicodedata.category(chr(i)).startswith('P')))]
-    sep_punc = ["，", "。", "？", "：", "；", "！", ",", "?", ":", ";"]
+        if unicodedata.category(chr(i)).startswith('P')))] + [" ", "\n"]
+    sep_punc = ["，", "。", "？", "：", "；", "！", ",", "?", ":", ";", "\n"]
     sub_time = []
     sentence = ""
     start = 0
@@ -75,18 +75,17 @@ def get_timeline_of_subtitle(subs, txt):
         pos += len(sub["text"])
         sentence += sub["text"]
         dur += sub["duration"]
-        # if pos + 1 < len(txt): print(txt[pos], txt[pos + 1])
-        if i != len(subs) - 1 and txt[pos + 1] in sep_punc:
-            pos += 1
-            sub_time.append({"start": start, "duration": dur, "text": sentence})
-            start = subs[i + 1]["start"]
-            dur = 0
-            sentence = ""
-        elif i != len(subs) - 1 and txt[pos + 1] in punc: 
-            pos += 1
-            sentence += txt[pos]
-    if dur != 0:
-        sub_time.append({"start": start, "duration": dur, "text": sentence})
+        while pos + 1 < len(txt) and txt[pos + 1] in punc: 
+            if txt[pos + 1] in sep_punc and not all(char in punc for char in sentence):
+                pos += 1
+                sub_time.append({"start": start, "duration": dur, "text": sentence})
+                if i != len(subs) - 1:
+                    start = subs[i + 1]["start"]
+                    dur = 0
+                    sentence = ""
+            else:
+                pos += 1
+                if txt[pos] != "\n": sentence += txt[pos]
     return sub_time
 
 # generate subtitle image
@@ -120,18 +119,21 @@ def main():
     with open("data.txt", "r", encoding = "utf-8") as f:
         txt = f.read()
     sub = asyncio.run(voice(txt))
+    print(sub)
     
     # load and sort keywords
-    with open("keyword.json", "r", encoding = "utf-8") as f: 
+    with open("keywords.json", "r", encoding = "utf-8") as f: 
         keyword = load(f)
     keyword = sorted(keyword, key = cmp_to_key(cmp))
-    with open("keyword.json", "w", encoding="utf-8") as f:
-        dump(keyword, f, indent=4)
+    with open("keywords.json", "w", encoding="utf-8") as f:
+        dump(keyword, f, indent=4, ensure_ascii=False)
+    print(keyword)
     
     # get the timeline of keywords
     keyword_time = get_timeline_of_keyword(sub, keyword, txt)
     with open("keyword_time.json", "w", encoding = "utf-8") as f:
-        dump(keyword_time, f, indent = 4)
+        dump(keyword_time, f, indent = 4, ensure_ascii=False)
+    
         
     # get the timeline of subtitle
     subtitle_time = get_timeline_of_subtitle(sub, txt)

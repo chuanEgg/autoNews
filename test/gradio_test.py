@@ -36,6 +36,7 @@ def suggestion_text_form():
         str_date = datetime.strftime(date, "%Y%m%d")
         trends += [j for j in trends_crawler(str_date) if not any(j["title"] == k["title"] for k in trends)]
     trends = sorted(trends, key = cmp_to_key(cmp))
+    print(trends)
     
     # demonstrate top 10 search in markdown
     res = "### 最近 Google 熱門搜尋關鍵字\n\n| 關鍵字 | 搜尋次數 |\n|-|-|\n"
