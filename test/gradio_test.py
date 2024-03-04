@@ -40,7 +40,7 @@ def suggestion_text_form():
     
     # demonstrate top 10 search in markdown
     res = "### 最近 Google 熱門搜尋關鍵字\n\n| 關鍵字 | 搜尋次數 |\n|-|-|\n"
-    for i in range(10):
+    for i in range(20):
         res += f"| {trends[i]['title']} | {trends[i]['times_in_text']} |\n"
     return res
 
@@ -49,15 +49,31 @@ def generate_video(name):
     return gr.Video("video.mp4")
 
 def main():
-    demo = gr.Interface(
-        title = "欸癌新聞播報",
-        description = "這是一個方便的新聞影音產生工具，只要輸入新聞關鍵字，就能在 10 分鐘內產生 1 分鐘的新聞短影音", 
-        fn=generate_video,
-        inputs = gr.Textbox(lines=3, placeholder="Please input the keyword to generate the video",label="Video keyword"),
-        outputs = gr.Video(autoplay = True),
-        article = suggestion_text_form(),
-        allow_flagging = "never", 
-    ).queue()
+    # demo = gr.Interface(
+    #     title = "欸癌新聞播報",
+    #     description = "這是一個方便的新聞影音產生工具，只要輸入新聞關鍵字，就能在 10 分鐘內產生 1 分鐘的新聞短影音", 
+    #     fn=generate_video,
+    #     inputs = gr.Textbox(lines=3, placeholder="Please input the keyword to generate the video",label="Video keyword"),
+    #     outputs = gr.Video(autoplay = True),
+    #     article = suggestion_text_form(),
+    #     allow_flagging = "never", 
+    # ).queue()
+    demo = gr.Blocks().queue()
+    with demo:
+        with gr.Row():
+            with gr.Column(scale=3, min_width=600):
+                with gr.Tab(label="關鍵字"):
+                    inputs = gr.Textbox(lines=3, placeholder="請在此輸入欲生成之新聞影片關鍵字",label="新聞影片關鍵字")
+                with gr.Tab(label="進階選項"):
+                    video_speed = gr.Slider(label="影片速度", value=1, minimum=0.1, maximum=10, step=0.1, interactive=True, info="調整播報員講話速度，每種播報員預設速度稍有不同")
+                    voice_option = gr.Radio(label="播報員聲音選項", choices=["zh-TW-HsiaoChenNeural", "zh-TW-HsiaoYuNeural", "zh-TW-YunJheNeural"], value="zh-TW-HsiaoChenNeural")
+                submit_button = gr.Button("產生影片")
+                outputs = gr.Video(autoplay=True)
+            with gr.Column(scale=1, min_width=200):
+                gr.Markdown(suggestion_text_form())
+        
+        submit_button.click(fn=generate_video, inputs=inputs, outputs=outputs)
+        
     demo.launch()
 
 if __name__ == "__main__": main()
