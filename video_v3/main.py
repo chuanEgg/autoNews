@@ -77,20 +77,33 @@ def get_gpt_response(openai_api_key, keyword):
     openai.api_key = openai_api_key
 
     # get news materials from google news
-    content = f'''
-    Craft a slyly ironic digest in Traditional Chinese, encapsulating the essence of Bill Maher's renowned political satire. Condense it to 300-350 characters, channel Maher's tone without first-person or symbols like "!", "「", "」", "哈", "哇", "嘿", "呀".Mimic Maher's wit. Dismiss the source with nonchalance, ensuring your response is a comedic masterpiece, dripping with Maher's distinctive humor.|
-    Article:
-    """
-    {get_news(keyword)}
-    """
+    content = f"""
+    Your task is to generate a summary of a series of news articles in Traditional Chinese. 
+    Here is the rules to follow:
+    1. Make the summary sarcastic and humorous, mimicing Bill Maher's style. 
+    2. Use memes as reference.
+    3. DO NOT use first person perspective.
+    4. DO NOT use interjection.
+    5. DO NOT use following character: `!`, `「`, `」`, `哈`, `哇`, `嘿`, `呀`.
+
+    Here's an example:
+    ```
+    近日讓國人震驚的新聞 除了臺灣誕生首位日本動作女星外 想不到還有失去童子功的大谷宣布結婚 這周根本破防大比拼 前幾天卡保現在大谷 睡個覺起來世界都變了 這社會還有什麼事可以相信的 太會藏了吧 說好的處男之身呢 大谷也說了結婚對象是日本女性 還有分一隻狗 共組家庭 有沒有可能老婆是幌子 其實狗才是正宮 畢竟戀愛只會影響我投球的速度 棒球漫畫都是這樣說的 也搞不好是二次元老婆才有可能躲過狗仔 把老婆長得如此沒痕計 想不到婚戒會比冠軍戒指還早入手 就算大谷娶了一個老婆了 應該還缺一個老公吧 畢竟一夫一妻制度餵奶粉們別難過 還有機會 如果考慮重生也來的及 只要現在去投胎 就有機會可以當大谷的小孩 共組家庭能說的都說了 大谷粉們加油
+    ```
+
+    Summarize the articles below, delimited by triple backticks, in around 300 characters. 
+    News articles: 
     '''
+    {get_news(keyword)}
+    '''
+    """
 
     # setting prompt and get resonse
     prompt = [{"role": "user", "content": content}]
     response = openai.ChatCompletion.create(
-    model="gpt-4-0125-preview",
+    model="gpt-4",
     max_tokens=1024,
-    temperature=1.2,
+    temperature=0.8,
     messages = prompt)
 
     # write context into text file
@@ -255,9 +268,14 @@ def download_image_and_gif():
 
 # function about generating voice with the timeline of keywords and subtitle
 # generate voice
-async def voice(text) -> None:
-    # communicate = edge_tts.Communicate(text, voice_list[0], rate = "+20%")
-    communicate = edge_tts.Communicate(text, voice_list[0])
+async def voice(text, voice_option, voice_speed) -> None:
+    # select rate
+    if voice_speed < 1:
+        rate = f"-{int((1 - voice_speed) * 100)}%"
+    else:
+        rate = f"+{int((voice_speed - 1) * 100)}%"
+    # generate voice
+    communicate = edge_tts.Communicate(text, voice=voice_option, rate=rate)
     await communicate.save(os.path.join("data", "voice.mp3"))
     # save subtitle timeline
     sub = []
@@ -325,11 +343,11 @@ def get_timeline_of_subtitle(subs, txt):
 
 
 # generate voice with the timeline of keywords and subtitle
-def voice_and_timeline():
+def voice_and_timeline(voice_option, voice_speed):
     # generate voice and subtitle
     with open(os.path.join("data", "data.txt"), "r", encoding = "utf-8") as f:
         txt = f.read()
-    sub = asyncio.run(voice(txt))
+    sub = asyncio.run(voice(txt, voice_option, voice_speed))
     
     # get the timeline of keywords
     with open(os.path.join("data", "keywords.json"), "r", encoding = "utf-8") as f: 
@@ -350,7 +368,7 @@ def voice_and_timeline():
 
 
 # generate subtitle image
-def subtitle_image():
+def subtitle_image(subtitle_font, subtitle_size):
     # clear subtitle image
     rmtree(os.path.join("data", "subtitle_image"), ignore_errors=True)
     os.mkdir(os.path.join("data", "subtitle_image"))
@@ -364,8 +382,12 @@ def subtitle_image():
     draw = ImageDraw.Draw(img)
     img.save(os.path.join("data", "subtitle_image", "empty.png"))
     
+    # select font
+    if subtitle_font == "微軟正黑體": font = "msjh.ttc"
+    elif subtitle_font == "新細明體": font = "mingliu.ttc"
+    else: font = "kaiu.ttf"
     # create subtitle image
-    font = ImageFont.truetype(os.path.join("material", "msjh.ttc"), 72)
+    font = ImageFont.truetype(os.path.join("material", "font", font), 72)
     for i in range(len(subtitle_time)):
         # initialize image of subtitle
         sub = subtitle_time[i]
@@ -545,13 +567,13 @@ def suggestion_text_form():
 
 
 # after submit the keyword, start generating video
-def start_generate_video(keyword):
+def start_generate_video(keyword, voice_option, voice_speed, subtitle_font, subtitle_size):
     start_time = time()
     get_gpt_response(openai_api_key, keyword)
     get_keywords_from_context()
     download_image_and_gif()
-    voice_and_timeline()
-    subtitle_image()
+    voice_and_timeline(voice_option, voice_speed)
+    subtitle_image(subtitle_font, subtitle_size)
     generate_video()
     end_time = time()
     duration = end_time - start_time
@@ -562,15 +584,38 @@ def start_generate_video(keyword):
 
 # generate user interface
 def UI():
-    demo = gr.Interface(
-        title = "欸癌新聞播報",
-        description = "這是一個方便的新聞影音產生工具，只要輸入新聞關鍵字，就能在 10 分鐘內產生 1 分鐘的新聞短影音", 
-        fn=start_generate_video,
-        inputs = gr.Textbox(lines=3, placeholder="Please input the keyword to generate the video",label="新聞影片關鍵字"),
-        outputs = gr.Video(autoplay = True),
-        article = suggestion_text_form(),
-        allow_flagging = "never", 
-    ).queue()
+    demo = gr.Blocks(title="欸癌新聞播報").queue()
+    with demo:
+        # title and description
+        gr.Markdown("# 欸癌新聞播報")
+        gr.Markdown("這是一個方便的新聞影音產生工具，只要輸入新聞關鍵字，就能在 10 分鐘內產生 1 分鐘的新聞短影音")
+        with gr.Row():
+            # input and output
+            with gr.Column(scale=3, min_width=600):
+                # input the keyword
+                with gr.Tab(label="關鍵字"):
+                    inputs = gr.Textbox(lines=3, placeholder="請在此輸入欲生成之新聞影片關鍵字",label="新聞影片關鍵字")
+                # advanced option
+                with gr.Tab(label="進階選項"):
+                    # options about voice
+                    with gr.Column():
+                        voice_option = gr.Radio(label="播報員聲音選項", choices=["zh-TW-HsiaoChenNeural", "zh-TW-HsiaoYuNeural", "zh-TW-YunJheNeural"], value="zh-TW-HsiaoChenNeural", interactive=True, info="選擇播報員聲音")
+                        voice_speed = gr.Slider(label="影片速度", value=1, minimum=0.1, maximum=10, step=0.1, interactive=True, info="調整播報員講話速度，每種播報員預設速度稍有不同")
+                    # options about font
+                    with gr.Column():
+                        subtitle_font = gr.Radio(label="字幕字型", choices=["微軟正黑體", "新細明體", "標楷體"], value="微軟正黑體", interactive=True, info="選擇影片中字幕的字型")
+                        subtitle_size = gr.Slider(label="字幕大小", value=72, minimum=12, maximum=200, step=2, interactive=True, info="調整字幕大小，預設為 72")
+                # submit button
+                submit_button = gr.Button("產生影片")
+                outputs = gr.Video(autoplay=True)
+            
+            # suggested keywords
+            with gr.Column(scale=1, min_width=200):
+                gr.Markdown(suggestion_text_form())
+        
+        # submit button
+        submit_button.click(fn=start_generate_video, inputs=[inputs, voice_option, voice_speed, subtitle_font, subtitle_size], outputs=outputs)
+        
     demo.launch()
 
 

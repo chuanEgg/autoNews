@@ -44,9 +44,10 @@ def suggestion_text_form():
         res += f"| {trends[i]['title']} | {trends[i]['times_in_text']} |\n"
     return res
 
-def generate_video(name):
+def generate_video(video_keyword, voice_option, voice_speed, subtitle_font, subtitle_size):
+    print([video_keyword, voice_option, voice_speed, subtitle_font, subtitle_size])
     
-    return gr.Video("video.mp4")
+    return gr.Video(r"C:\Users\muen1\OneDrive\附件\程式1\Project\ytp-project\video_v3\video.mp4")
 
 def main():
     # demo = gr.Interface(
@@ -58,21 +59,37 @@ def main():
     #     article = suggestion_text_form(),
     #     allow_flagging = "never", 
     # ).queue()
-    demo = gr.Blocks().queue()
+    demo = gr.Blocks(title="欸癌新聞播報").queue()
     with demo:
+        # title and description
+        gr.Markdown("# 欸癌新聞播報")
+        gr.Markdown("這是一個方便的新聞影音產生工具，只要輸入新聞關鍵字，就能在 10 分鐘內產生 1 分鐘的新聞短影音")
         with gr.Row():
+            # input and output
             with gr.Column(scale=3, min_width=600):
+                # input the keyword
                 with gr.Tab(label="關鍵字"):
                     inputs = gr.Textbox(lines=3, placeholder="請在此輸入欲生成之新聞影片關鍵字",label="新聞影片關鍵字")
+                # advanced option
                 with gr.Tab(label="進階選項"):
-                    video_speed = gr.Slider(label="影片速度", value=1, minimum=0.1, maximum=10, step=0.1, interactive=True, info="調整播報員講話速度，每種播報員預設速度稍有不同")
-                    voice_option = gr.Radio(label="播報員聲音選項", choices=["zh-TW-HsiaoChenNeural", "zh-TW-HsiaoYuNeural", "zh-TW-YunJheNeural"], value="zh-TW-HsiaoChenNeural")
+                    # options about voice
+                    with gr.Column():
+                        voice_option = gr.Radio(label="播報員聲音選項", choices=["zh-TW-HsiaoChenNeural", "zh-TW-HsiaoYuNeural", "zh-TW-YunJheNeural"], value="zh-TW-HsiaoChenNeural", interactive=True, info="選擇播報員聲音")
+                        voice_speed = gr.Slider(label="影片速度", value=1, minimum=0.1, maximum=10, step=0.1, interactive=True, info="調整播報員講話速度，每種播報員預設速度稍有不同")
+                    # options about font
+                    with gr.Column():
+                        subtitle_font = gr.Radio(label="字幕字型", choices=["微軟正黑體", "新細明體", "標楷體"], value="微軟正黑體", interactive=True, info="選擇影片中字幕的字型")
+                        subtitle_size = gr.Slider(label="字幕大小", value=48, minimum=12, maximum=120, step=1, interactive=True, info="調整字幕大小，預設為 48")
+                # submit button
                 submit_button = gr.Button("產生影片")
                 outputs = gr.Video(autoplay=True)
+            
+            # suggested keywords
             with gr.Column(scale=1, min_width=200):
                 gr.Markdown(suggestion_text_form())
         
-        submit_button.click(fn=generate_video, inputs=inputs, outputs=outputs)
+        # submit button
+        submit_button.click(fn=generate_video, inputs=[inputs, voice_option, voice_speed, subtitle_font, subtitle_size], outputs=outputs)
         
     demo.launch()
 
