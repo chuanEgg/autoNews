@@ -95,20 +95,33 @@ def subtitle_image(subtitle_time):
     draw = ImageDraw.Draw(img)
     img.save(os.path.join("subtitle_image", "empty.png"))
     
+    font_size = 40
     # create subtitle image
-    font = ImageFont.truetype('msjh.ttc', 72)
+    font = ImageFont.truetype('msjh.ttc', font_size)
     for i in range(len(subtitle_time)):
         # initialize image of subtitle
         sub = subtitle_time[i]
         img = Image.new('RGBA', (1920, 1080))
         draw = ImageDraw.Draw(img)
-        # get the position of subtitle
-        left, top, right, bottom = font.getmask(sub["text"]).getbbox()
-        width = right - left
-        height = bottom - top
-        # draw the bg and text
-        draw.rectangle(((1920 - width) // 2 - 10, 1040 - height, (1920 + width) // 2 + 10, 1060), (0, 0, 0))
-        draw.text(((1920 - width) // 2, 1040 - height), sub["text"], fill = (255, 255, 255), font = font)
+        
+        # cut the subtitle if it is too long
+        sub_text_list = []
+        max_len_per_line = int(-0.1 * font_size + 27)
+        for j in range(len(sub["text"]) // max_len_per_line):
+            sub_text_list.append(sub["text"][j * max_len_per_line:(j + 1) * max_len_per_line])
+        if len(sub["text"]) % max_len_per_line != 0:
+            sub_text_list.append(sub["text"][len(sub["text"]) // max_len_per_line * max_len_per_line:])
+        
+        # create subtitle for every line
+        for j in range(len(sub_text_list)):
+            sub_text = sub_text_list[j]
+            # get the position of subtitle
+            left, top, right, bottom = font.getmask(sub_text).getbbox()
+            width = right - left
+            height = (bottom - top) + 40
+            # draw the bg and text
+            draw.rectangle(((1920 - width) // 2 - 10, 1020 - height * (len(sub_text_list) - j), (1920 + width) // 2 + 10, 1020 - height * (len(sub_text_list) - j - 1)), (0, 0, 0))
+            draw.text(((1920 - width) // 2, 1020 - height * (len(sub_text_list) - j)), sub_text, fill = (255, 255, 255), font = font)
         # save image
         img.save(os.path.join("subtitle_image", f"{i}.png"))
             
