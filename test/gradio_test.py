@@ -59,11 +59,16 @@ def main():
     #     article = suggestion_text_form(),
     #     allow_flagging = "never", 
     # ).queue()
-    demo = gr.Blocks(title="欸癌新聞播報").queue()
+    theme = gr.themes.Soft(
+        primary_hue="sky",
+        secondary_hue="rose",
+        neutral_hue="violet",
+    )
+    demo = gr.Blocks(title="欸癌新聞播報", theme=theme).queue()
     with demo:
         # title and description
-        gr.Markdown("# 欸癌新聞播報")
-        gr.Markdown("這是一個方便的新聞影音產生工具，只要輸入新聞關鍵字，就能在 10 分鐘內產生 1 分鐘的新聞短影音")
+        # gr.Markdown("# 欸癌新聞播報")
+        # gr.Markdown("這是一個方便的新聞影音產生工具，只要輸入新聞關鍵字，就能在 10 分鐘內產生 1 分鐘的新聞短影音")
         with gr.Row():
             # input and output
             with gr.Column(scale=3, min_width=600):
@@ -80,6 +85,9 @@ def main():
                     with gr.Column():
                         subtitle_font = gr.Radio(label="字幕字型", choices=["微軟正黑體", "新細明體", "標楷體"], value="微軟正黑體", interactive=True, info="選擇影片中字幕的字型")
                         subtitle_size = gr.Slider(label="字幕大小", value=48, minimum=12, maximum=120, step=1, interactive=True, info="調整字幕大小，預設為 48")
+                    # option about template
+                    with gr.Column():
+                        video_with_template = gr.Checkbox(label="播報員模板", value=True, interactive=True, info="影片是否要有海綿寶寶播報員為您播報內容，或是單純瀏覽影片素材")
                 # submit button
                 submit_button = gr.Button("產生影片")
                 outputs = gr.Video(autoplay=True)
@@ -89,8 +97,8 @@ def main():
                 gr.Markdown(suggestion_text_form())
         
         # submit button
-        submit_button.click(fn=generate_video, inputs=[inputs, voice_option, voice_speed, subtitle_font, subtitle_size], outputs=outputs)
+        submit_button.click(fn=generate_video, inputs=[inputs, voice_option, voice_speed, subtitle_font, subtitle_size, video_with_template], outputs=outputs)
         
-    demo.launch()
+    demo.launch(share=True)
 
 if __name__ == "__main__": main()

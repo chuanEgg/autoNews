@@ -62,11 +62,16 @@ def get_news(keyword):
     res = google_news.get_news(keyword)
     result = []
     for i in range(len(res)):
+        # prevent the length of news becoming too long
+        if len("\n\n".join(result)) > 1000: break
+        # try crawling the content of news
         try:
             article = google_news.get_full_article(res[i]["url"])
             result.append(f"{article.title}\n{article.text}")
+            cnt += 1
         except:
             pass
+    # print("\n\n".join(result), len("\n\n".join(result)))
     return "\n\n".join(result)
 
 
@@ -217,7 +222,7 @@ def get_image(keyword, id):
     while True:
         try:
             downloader(keyword, \
-            limit = 1, output_dir = os.path.join("data", "image_and_video"), force_replace = True, filter = "photo")
+            limit = 3, output_dir = os.path.join("data", "image_and_video"), force_replace = True, filter = "photo")
             with open(os.path.join("data", "image_and_video", keyword, os.listdir(os.path.join("data", "image_and_video", keyword))[0]), "rb") as f:
                 img = f.read()
             with open(os.path.join("data", "image_and_video", f"{id}.jpg"), "wb") as f:
@@ -384,7 +389,7 @@ def subtitle_image(subtitle_font, subtitle_size):
     elif subtitle_font == "新細明體": font_name = "mingliu.ttc"
     else: font_name = "kaiu.ttf"
     # create subtitle image
-    font = ImageFont.truetype(os.path.join("material", "font", font), 72)
+    font = ImageFont.truetype(os.path.join("material", "font", font_name), 72)
     for i in range(len(subtitle_time)):
         # initialize image of subtitle
         sub = subtitle_time[i]
@@ -461,14 +466,19 @@ def image_and_video_clip(keyword_time, subtitle_time):
     subtitle_clips = subtitle_clip(subtitle_time)
     clips["subtitle_clips"] = subtitle_clips
     
+    # logo clip
+    logo_clip = ImageClip(os.path.join("material", "logo.png"), transparent=True).set_duration(audio.duration).resize(height=150).set_position((20, 20))
+    clips["logo_clip"] = logo_clip
+    
     return clips
 
 # export video without template
 def export_video(clips):
-    # composite concat clip and subtitle
+    # composite concat clip, subtitle, and logo
     concat_clip = clips["concat_clip"]
     subtitle_clips = clips["subtitle_clips"]
-    concat_clip_with_sub = CompositeVideoClip([concat_clip] + subtitle_clips)
+    logo_clip = clips["logo_clip"]
+    concat_clip_with_sub = CompositeVideoClip([concat_clip] + subtitle_clips + [logo_clip])
     clips["concat_clip_with_sub"] = concat_clip_with_sub
     
     # set_audio
@@ -482,28 +492,25 @@ def export_video(clips):
 
 # export video with template (spongebob-news)
 def export_video_with_template(clips):
-    concat_clip = clips["concat_clip"].resize(width = 471).set_position((237, 236))
+    concat_clip = clips["concat_clip"]
     subtitle_clips = clips["subtitle_clips"]
+    logo_clip = clips["logo_clip"]
     audio = clips["audio"]
     
     # template
-    video_clip = VideoFileClip(os.path.join("material", "spongebob-news.mp4")).resize(height = 1080)
-    template_clip = vfx.loop(video_clip, duration = audio.duration)
+    video_clip = VideoFileClip(os.path.join("material", "fish.mp4")).resize(height = 270)
+    template_clip = vfx.loop(video_clip, duration = audio.duration).set_position((1440, 810))
     clips["video_clip"] = video_clip
     clips["template_clip"] = template_clip
     
-    # composite template and concat clip
-    concat_clip_with_template = CompositeVideoClip([template_clip, concat_clip]).set_position((240, 0))
-    clips["concat_clip_with_template"] = concat_clip_with_template
-    
     # add subtitle and set audio
     empty = ImageClip(os.path.join("data", "subtitle_image", "empty.png"), transparent = True).set_start(0).set_duration(audio.duration).set_position((0, 0))
-    video = CompositeVideoClip([empty, concat_clip_with_template] + subtitle_clips).set_audio(audio)
+    video = CompositeVideoClip([empty, concat_clip, template_clip, logo_clip] + subtitle_clips).set_audio(audio)
     clips["empty"] = empty
     clips["video"] = video
     
     # export video
-    video.write_videofile("video.mp4", fps = 30, threads = 8)
+    video.write_videofile("video.mp4", fps = 30, threads = 12)
     
     return clips
 
@@ -520,7 +527,7 @@ def close_file(clips):
 
 
 # generate video
-def generate_video():
+def generate_video(video_with_template):
     # read required file
     with open(os.path.join("data", "keyword_time.json"), "r", encoding = "utf-8") as f: 
         keyword_time = load(f)
@@ -531,8 +538,10 @@ def generate_video():
     clips = image_and_video_clip(keyword_time, subtitle_time)
     
     # export video
-    # clips = export_video(clips)
-    clips = export_video_with_template(clips)
+    if video_with_template:
+        clips = export_video_with_template(clips)
+    else:
+        clips = export_video(clips)
     
     # close file
     close_file(clips)
@@ -576,14 +585,14 @@ def suggestion_text_form():
 
 
 # after submit the keyword, start generating video
-def start_generate_video(keyword, voice_option, voice_speed, subtitle_font, subtitle_size):
+def start_generate_video(keyword, voice_option, voice_speed, subtitle_font, subtitle_size, video_with_template):
     start_time = time()
     get_gpt_response(openai_api_key, keyword)
     get_keywords_from_context()
     download_image_and_gif()
     voice_and_timeline(voice_option, voice_speed)
     subtitle_image(subtitle_font, subtitle_size)
-    generate_video()
+    generate_video(video_with_template)
     end_time = time()
     duration = end_time - start_time
     print(f"Execution time: {round(duration // 60)}:{('0' + str(round(duration) % 60)) if len(str(round(duration) % 60)) == 1 else str(round(duration) % 60)}")
@@ -593,7 +602,14 @@ def start_generate_video(keyword, voice_option, voice_speed, subtitle_font, subt
 
 # generate user interface
 def UI():
-    demo = gr.Blocks(title="欸癌新聞播報").queue()
+    # set the theme of ui
+    theme = gr.themes.Soft(
+        primary_hue="sky",
+        secondary_hue="rose",
+        neutral_hue="violet",
+    )
+    # set up ui
+    demo = gr.Blocks(title="欸癌新聞播報", theme=theme).queue()
     with demo:
         # title and description
         gr.Markdown("# 欸癌新聞播報")
@@ -614,6 +630,9 @@ def UI():
                     with gr.Column():
                         subtitle_font = gr.Radio(label="字幕字型", choices=["微軟正黑體", "新細明體", "標楷體"], value="微軟正黑體", interactive=True, info="選擇影片中字幕的字型")
                         subtitle_size = gr.Slider(label="字幕大小", value=72, minimum=12, maximum=200, step=2, interactive=True, info="調整字幕大小，預設為 72")
+                    # option about template
+                    with gr.Column():
+                        video_with_template = gr.Checkbox(label="播報員模板", value=True, interactive=True, info="影片是否要有海綿寶寶播報員為您播報內容，或是單純瀏覽影片素材")
                 # submit button
                 submit_button = gr.Button("產生影片")
                 outputs = gr.Video(autoplay=True)
@@ -623,9 +642,9 @@ def UI():
                 gr.Markdown(suggestion_text_form())
         
         # submit button
-        submit_button.click(fn=start_generate_video, inputs=[inputs, voice_option, voice_speed, subtitle_font, subtitle_size], outputs=outputs)
+        submit_button.click(fn=start_generate_video, inputs=[inputs, voice_option, voice_speed, subtitle_font, subtitle_size, video_with_template], outputs=outputs)
         
-    demo.launch()
+    demo.launch(share=True)
 
 
 
@@ -634,7 +653,7 @@ def UI():
 
 
 def main():
-    # start up user interfac
+    # start up user interface
     UI()
     
     

@@ -1,227 +1,112 @@
 [
     {
-        "content": "時代",
-        "type": "Na",
-        "head": 3
-    },
-    {
-        "content": "愛情",
-        "type": "Na",
-        "head": 6
-    },
-    {
-        "content": "减肥",
-        "type": "Na",
-        "head": 9
-    },
-    {
-        "content": "標準",
-        "type": "Na",
-        "head": 21
-    },
-    {
-        "content": "Karina",
+        "content": "山本由伸",
         "type": "PERSON",
-        "head": 30
+        "head": 0
     },
     {
-        "content": "男演員",
+        "content": "道奇春訓戰",
+        "type": "EVENT",
+        "head": 5
+    },
+    {
+        "content": "網路",
         "type": "Na",
-        "head": 39
+        "head": 22
     },
     {
-        "content": "戀情",
+        "content": "人生",
         "type": "Na",
-        "head": 49
+        "head": 35
     },
     {
-        "content": "粉絲們",
+        "content": "大谷翔平",
+        "type": "PERSON",
+        "head": 40
+    },
+    {
+        "content": "日本",
+        "type": "GPE",
+        "head": 47
+    },
+    {
+        "content": "投手",
         "type": "Na",
-        "head": 55
+        "head": 51
     },
     {
-        "content": "心靈難題",
+        "content": "山本由伸",
+        "type": "PERSON",
+        "head": 66
+    },
+    {
+        "content": "打席",
         "type": "Na",
-        "head": 62
+        "head": 82
     },
     {
-        "content": "偶像",
+        "content": "安打",
         "type": "Na",
-        "head": 69
+        "head": 86
     },
     {
-        "content": "生活",
-        "type": "Na",
-        "head": 84
-    },
-    {
-        "content": "理由",
+        "content": "人",
         "type": "Na",
         "head": 90
     },
     {
+        "content": "實力",
+        "type": "Na",
+        "head": 107
+    },
+    {
+        "content": "大谷翔平",
+        "type": "PERSON",
+        "head": 115
+    },
+    {
+        "content": "預警",
+        "type": "Na",
+        "head": 120
+    },
+    {
+        "content": "消息",
+        "type": "Na",
+        "head": 128
+    },
+    {
         "content": "粉絲",
         "type": "Na",
-        "head": 103
+        "head": 131
     },
     {
-        "content": "價格",
-        "type": "Na",
-        "head": 110
-    },
-    {
-        "content": "”",
-        "type": "Na",
-        "head": 133
-    },
-    {
-        "content": "理念",
-        "type": "Na",
-        "head": 137
-    },
-    {
-        "content": "偶像",
-        "type": "Na",
-        "head": 145
-    },
-    {
-        "content": "”",
-        "type": "Na",
-        "head": 151
-    },
-    {
-        "content": "流量時代",
-        "type": "Na",
-        "head": 156
-    },
-    {
-        "content": "偶像",
-        "type": "Na",
-        "head": 162
-    },
-    {
-        "content": "人際關係",
-        "type": "Na",
-        "head": 167
-    },
-    {
-        "content": "潮流",
-        "type": "Na",
-        "head": 180
-    },
-    {
-        "content": "Karina",
+        "content": "大谷翔平",
         "type": "PERSON",
-        "head": 188
+        "head": 148
     },
     {
-        "content": "大獎",
+        "content": "右手小指",
         "type": "Na",
-        "head": 203
+        "head": 153
     },
     {
-        "content": "飲食",
+        "content": "繃帶",
+        "type": "Na",
+        "head": 159
+    },
+    {
+        "content": "護身符",
+        "type": "Na",
+        "head": 179
+    },
+    {
+        "content": "人",
+        "type": "Na",
+        "head": 189
+    },
+    {
+        "content": "人生",
         "type": "Na",
         "head": 208
-    },
-    {
-        "content": "戰役",
-        "type": "Na",
-        "head": 214
-    },
-    {
-        "content": "口福",
-        "type": "Na",
-        "head": 229
-    },
-    {
-        "content": "女團形象",
-        "type": "Na",
-        "head": 235
-    },
-    {
-        "content": "奇迹",
-        "type": "Na",
-        "head": 240
-    },
-    {
-        "content": "明星",
-        "type": "Na",
-        "head": 247
-    },
-    {
-        "content": "標準做法",
-        "type": "Na",
-        "head": 250
-    },
-    {
-        "content": "日量體重",
-        "type": "Na",
-        "head": 261
-    },
-    {
-        "content": "路",
-        "type": "Na",
-        "head": 271
-    },
-    {
-        "content": "情感路徑",
-        "type": "Na",
-        "head": 273
-    },
-    {
-        "content": "電視劇",
-        "type": "Na",
-        "head": 281
-    },
-    {
-        "content": "社會",
-        "type": "Na",
-        "head": 290
-    },
-    {
-        "content": "形象",
-        "type": "Na",
-        "head": 297
-    },
-    {
-        "content": "感情",
-        "type": "Na",
-        "head": 300
-    },
-    {
-        "content": "現實生活",
-        "type": "Na",
-        "head": 323
-    },
-    {
-        "content": "明星們",
-        "type": "Na",
-        "head": 331
-    },
-    {
-        "content": "高效",
-        "type": "Na",
-        "head": 339
-    },
-    {
-        "content": "凡人",
-        "type": "Na",
-        "head": 347
-    },
-    {
-        "content": "愛情",
-        "type": "Na",
-        "head": 357
-    },
-    {
-        "content": "苦果",
-        "type": "Na",
-        "head": 361
-    },
-    {
-        "content": "甜頭",
-        "type": "Na",
-        "head": 370
     }
 ]

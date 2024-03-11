@@ -26,7 +26,8 @@ def image_and_video_clip(keyword_time, subtitle_time):
     
     # image and video(gif) clips
     image_and_video_clips = []
-    for i in range(len(keyword_time)):
+    # for i in range(len(keyword_time)):
+    for i in range(10):
         # insert image or video
         try:
             clip = ImageClip(os.path.join("image_and_video", f"{i}.jpg")).set_duration(keyword_time[i + 1]["start"] - keyword_time[i]["start"] if i < len(keyword_time) - 1 else talk_audio.duration - keyword_time[i]["start"]).resize(height = 1080)
@@ -47,15 +48,20 @@ def image_and_video_clip(keyword_time, subtitle_time):
     subtitle_clips = subtitle_clip(subtitle_time)
     clips["subtitle_clips"] = subtitle_clips
     
+    # logo clip
+    logo_clip = ImageClip(os.path.join("material", "logo.png"), transparent=True).set_duration(audio.duration).resize(height=150).set_position((20, 20))
+    clips["logo_clip"] = logo_clip
+    
     return clips
     
 
 
 def export_video(clips):
-    # composite concat clip and subtitle
+    # composite concat clip, subtitle, and logo
     concat_clip = clips["concat_clip"]
     subtitle_clips = clips["subtitle_clips"]
-    concat_clip_with_sub = CompositeVideoClip([concat_clip] + subtitle_clips)
+    logo_clip = clips["logo_clip"]
+    concat_clip_with_sub = CompositeVideoClip([concat_clip] + subtitle_clips + [logo_clip])
     clips["concat_clip_with_sub"] = concat_clip_with_sub
     
     # set_audio
@@ -77,23 +83,21 @@ def close_file(clips):
     
 
 def export_video_with_template(clips):
-    concat_clip = clips["concat_clip"].resize(width = 471).set_position((237, 236))
+    concat_clip = clips["concat_clip"]
     subtitle_clips = clips["subtitle_clips"]
+    logo_clip = clips["logo_clip"]
     audio = clips["audio"]
     
     # template
-    video_clip = VideoFileClip(os.path.join("material", "spongebob-news.mp4")).resize(height = 1080)
-    template_clip = vfx.loop(video_clip, duration = audio.duration)
+    video_clip = VideoFileClip(os.path.join("material", "fish.mp4")).resize(height = 270)
+    template_clip = vfx.loop(video_clip, duration = audio.duration).set_position((1440, 810))
     clips["video_clip"] = video_clip
     clips["template_clip"] = template_clip
     
-    # composite template and concat clip
-    concat_clip_with_template = CompositeVideoClip([template_clip, concat_clip]).set_position((240, 0))
-    clips["concat_clip_with_template"] = concat_clip_with_template
     
     # add subtitle and set audio
     empty = ImageClip(os.path.join("subtitle_image", "empty.png"), transparent = True).set_start(0).set_duration(audio.duration).set_position((0, 0))
-    video = CompositeVideoClip([empty, concat_clip_with_template] + subtitle_clips).set_audio(audio)
+    video = CompositeVideoClip([empty, concat_clip, template_clip, logo_clip] + subtitle_clips).set_audio(audio)
     clips["empty"] = empty
     clips["video"] = video
     
