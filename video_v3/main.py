@@ -486,7 +486,7 @@ def export_video(clips):
     clips["video"] = video
     
     # export video
-    video.write_videofile("video.mp4", fps = 30, threads = 12)
+    video.write_videofile("video.mp4", fps = 10, threads = 12)
     
     return clips
 
@@ -510,7 +510,7 @@ def export_video_with_template(clips):
     clips["video"] = video
     
     # export video
-    video.write_videofile("video.mp4", fps = 30, threads = 12)
+    video.write_videofile("video.mp4", fps = 10, threads = 12)
     
     return clips
 
