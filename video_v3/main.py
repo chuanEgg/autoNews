@@ -325,12 +325,8 @@ def get_timeline_of_subtitle(subs, txt):
     dur = 0
     pos = -1
     for i in range(len(subs)):
-        sub = subs[i]
-        pos += len(sub["text"])
-        sentence += sub["text"]
-        dur += sub["duration"]
-        while pos + 1 < len(txt) and txt[pos + 1] in punc: 
-            if txt[pos + 1] in sep_punc and not all(char in punc for char in sentence):
+        while pos < len(txt) and txt[pos] in punc: 
+            if txt[pos] in sep_punc and not all(char in punc for char in sentence):
                 pos += 1
                 sub_time.append({"start": start, "duration": dur, "text": sentence})
                 if i != len(subs) - 1:
@@ -338,8 +334,12 @@ def get_timeline_of_subtitle(subs, txt):
                     dur = 0
                     sentence = ""
             else:
-                pos += 1
                 if txt[pos] != "\n": sentence += txt[pos]
+                pos += 1
+        sub = subs[i]
+        pos += len(sub["text"])
+        sentence += sub["text"]
+        dur += sub["duration"]
     return sub_time
 
 
