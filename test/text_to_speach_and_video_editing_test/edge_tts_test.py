@@ -5,13 +5,13 @@ from vtt_to_srt.vtt_to_srt import ConvertFile
 
 voice = ["zh-TW-HsiaoChenNeural", "zh-TW-HsiaoYuNeural", "zh-TW-YunJheNeural"]
 
-with open(os.path.join("..", "data.txt"), "r", encoding = "utf-8") as f:
-    text = f.read()
-# text = "哈囉你好嗎?衷心感謝。"
+# with open(os.path.join("..", "data.txt"), "r", encoding = "utf-8") as f:
+#     text = f.read()
+text = "哈囉你好嗎?衷心感謝。"
 
 
 async def amain(id, create_sub = False) -> None:
-    communicate = edge_tts.Communicate(text, voice[id], rate = "+20%")
+    communicate = edge_tts.Communicate(text, voice[id], rate = "+0%")
     await communicate.save(os.path.join("edge-tts", f"{id}.mp3"))
     if create_sub:
         submaker = edge_tts.SubMaker()
@@ -29,4 +29,4 @@ async def amain(id, create_sub = False) -> None:
 
 
 for i in range(1):
-    asyncio.run(amain(2, True))
+    asyncio.run(amain(0, False))

@@ -62,8 +62,6 @@ def get_news(keyword):
     res = google_news.get_news(keyword)
     result = []
     for i in range(len(res)):
-        # prevent the length of news becoming too long
-        if len("\n\n".join(result)) > 1000: break
         # try crawling the content of news
         try:
             article = google_news.get_full_article(res[i]["url"])
@@ -72,7 +70,9 @@ def get_news(keyword):
         except:
             pass
     # print("\n\n".join(result), len("\n\n".join(result)))
-    return "\n\n".join(result)
+    # prevent the content is too long
+    if "\n\n".join(result) > 2005: return "\n\n".join(result)[:2000]
+    else: return "\n\n".join(result)
 
 
 
