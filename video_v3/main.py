@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from json import load, loads, dump
 import os
 from better_bing_image_downloader import downloader
@@ -71,7 +72,7 @@ def get_news(keyword):
             pass
     # print("\n\n".join(result), len("\n\n".join(result)))
     # prevent the content is too long
-    if "\n\n".join(result) > 2005: return "\n\n".join(result)[:2000]
+    if len("\n\n".join(result)) > 2005: return "\n\n".join(result)[:2000]
     else: return "\n\n".join(result)
 
 
@@ -318,6 +319,7 @@ def get_timeline_of_keyword(sub, keyword, txt):
 def get_timeline_of_subtitle(subs, txt):
     punc = [chr(j) for j in (dict.fromkeys(i for i in range(sys.maxunicode)
         if unicodedata.category(chr(i)).startswith('P')))] + [" ", "\n"]
+    punc.remove(".")
     sep_punc = ["，", "。", "？", "：", "；", "！", ",", "?", ":", ";", "\n"]
     sub_time = []
     sentence = ""
@@ -340,6 +342,8 @@ def get_timeline_of_subtitle(subs, txt):
         pos += len(sub["text"])
         sentence += sub["text"]
         dur += sub["duration"]
+    if sentence != "":
+        sub_time.append({"start": start, "duration": dur, "text": sentence})
     return sub_time
 
 
@@ -498,7 +502,7 @@ def export_video_with_template(clips):
     audio = clips["audio"]
     
     # template
-    video_clip = VideoFileClip(os.path.join("material", "fish.mp4")).resize(height = 270)
+    video_clip = VideoFileClip(os.path.join("material", "spongebob-news.mp4")).resize(height = 270)
     template_clip = vfx.loop(video_clip, duration = audio.duration).set_position((1440, 810))
     clips["video_clip"] = video_clip
     clips["template_clip"] = template_clip
@@ -588,14 +592,31 @@ def suggestion_text_form():
 def start_generate_video(keyword, voice_option, voice_speed, subtitle_font, subtitle_size, video_with_template):
     start_time = time()
     get_gpt_response(openai_api_key, keyword)
+    t1 = time()
     get_keywords_from_context()
+    t2 = time()
     download_image_and_gif()
+    t3 = time()
     voice_and_timeline(voice_option, voice_speed)
+    t4 = time()
     subtitle_image(subtitle_font, subtitle_size)
+    t5 = time()
     generate_video(video_with_template)
     end_time = time()
     duration = end_time - start_time
     print(f"Execution time: {round(duration // 60)}:{('0' + str(round(duration) % 60)) if len(str(round(duration) % 60)) == 1 else str(round(duration) % 60)}")
+    duration = t1 - start_time
+    print(f"get_gpt_response: {round(duration // 60)}:{('0' + str(round(duration) % 60)) if len(str(round(duration) % 60)) == 1 else str(round(duration) % 60)}")
+    duration = t2 - t1
+    print(f"get_keywords_from_context: {round(duration // 60)}:{('0' + str(round(duration) % 60)) if len(str(round(duration) % 60)) == 1 else str(round(duration) % 60)}")
+    duration = t3 - t2
+    print(f"download_image_and_gif: {round(duration // 60)}:{('0' + str(round(duration) % 60)) if len(str(round(duration) % 60)) == 1 else str(round(duration) % 60)}")
+    duration = t4 - t3
+    print(f"voice_and_timeline: {round(duration // 60)}:{('0' + str(round(duration) % 60)) if len(str(round(duration) % 60)) == 1 else str(round(duration) % 60)}")
+    duration = t5 - t4
+    print(f"subtitle_image: {round(duration // 60)}:{('0' + str(round(duration) % 60)) if len(str(round(duration) % 60)) == 1 else str(round(duration) % 60)}")
+    duration = end_time - t5
+    print(f"generate_video: {round(duration // 60)}:{('0' + str(round(duration) % 60)) if len(str(round(duration) % 60)) == 1 else str(round(duration) % 60)}")
     return gr.Video("video.mp4")
 
 
