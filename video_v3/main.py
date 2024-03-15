@@ -34,7 +34,8 @@ with open(os.path.join("data", "OpenAI_API_Key.txt"), "r") as f:
     openai_api_key = f.read()
 
 # tenor setting
-tenor_api_key = "AIzaSyCmeWu09YmT9sRwyfqnZBoGROEBhsHVsF0"  # click to set to your api key
+with open(os.path.join("data", "Tenor_API_Key.txt"), "r") as f:
+    tenor_api_key = f.read()  # click to set to your api key
 ckey = "ytp_project"  # set the client_key for the integration and use the same value for all API calls
 
 # voice option

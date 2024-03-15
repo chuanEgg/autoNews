@@ -6,7 +6,9 @@ from functools import cmp_to_key
 from shutil import rmtree
 
 # tenor setting
-apikey = "AIzaSyCmeWu09YmT9sRwyfqnZBoGROEBhsHVsF0"  # click to set to your apikey
+# tenor setting
+with open(os.path.join("data", "Tenor_API_Key.txt"), "r") as f:
+    tenor_api_key = f.read()  # click to set to your api key
 ckey = "ytp_project"  # set the client_key for the integration and use the same value for all API calls
 
 # compare function for keywords
