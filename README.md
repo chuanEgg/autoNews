@@ -1,4 +1,4 @@
-# ytp-project
+# ytp-project (Legacy)
 ## Plan A
 ### General outline & project objective
 - grab the trending news online (mainly for PTT) and collect relating data from mainstream media
